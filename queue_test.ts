@@ -1,7 +1,4 @@
-import {
-  assertEquals,
-  assertThrows,
-} from "https://deno.land/std@0.86.0/testing/asserts.ts";
+import { assertEquals, assertThrows } from "./deps_test.ts";
 import { promiseState } from "./state.ts";
 import { Queue, QueueEmpty, QueueFull } from "./queue.ts";
 
