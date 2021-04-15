@@ -3,7 +3,7 @@ name: Test
 env:
   DENO_VERSION: v1.x
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   lint:
