@@ -77,7 +77,7 @@ export class Condition {
     if (!this.locked()) {
       throw new Error("The lock is not acquired");
     }
-    for (const i of Array(n)) {
+    for (const _ of Array(n)) {
       const waiter = this.#waiters.shift();
       if (!waiter) {
         break;
