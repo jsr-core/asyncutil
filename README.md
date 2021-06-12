@@ -1,5 +1,6 @@
 # async-deno
 
+[![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno)](https://deno.land/x/async)
 [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/async/mod.ts)
 [![Test](https://github.com/lambdalisue/async-deno/workflows/Test/badge.svg)](https://github.com/lambdalisue/async-deno/actions?query=workflow%3ATest)
 
