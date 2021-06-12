@@ -1,8 +1,8 @@
-# async-deno
+# async
 
 [![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno)](https://deno.land/x/async)
 [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/async/mod.ts)
-[![Test](https://github.com/lambdalisue/async-deno/workflows/Test/badge.svg)](https://github.com/lambdalisue/async-deno/actions?query=workflow%3ATest)
+[![Test](https://github.com/lambdalisue/deno-async/workflows/Test/badge.svg)](https://github.com/lambdalisue/deno-async/actions?query=workflow%3ATest)
 
 Asynchronous primitive modules loosely port from
 [Python's asyncio][python's asyncio] for [Deno][deno].
