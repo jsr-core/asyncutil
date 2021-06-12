@@ -5,25 +5,27 @@ env:
 
 on:
   schedule:
-    - cron: '0 7 * * 0'
+    - cron: "0 7 * * 0"
   push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
 
 jobs:
   lint:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - uses: denoland/setup-deno@main
         with:
           deno-version: ${{ env.DENO_VERSION }}
       - name: Lint
-        run: deno lint --unstable
+        run: deno lint
 
   format:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - uses: denoland/setup-deno@main
@@ -31,12 +33,10 @@ jobs:
           deno-version: ${{ env.DENO_VERSION }}
       - name: Format
         run: |
-          deno fmt
-          git diff --exit-code
+          deno fmt --check
 
   test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - uses: denoland/setup-deno@main
@@ -45,3 +45,15 @@ jobs:
       - name: Test
         run: |
           deno test
+        timeout-minutes: 5
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: denoland/setup-deno@main
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+      - name: Type check
+        run: |
+          deno test --unstable --no-run ./*.ts
