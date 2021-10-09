@@ -1,0 +1,52 @@
+[33m./lock_test.ts[39m
+
+[33m./semaphore_test.ts[39m
+
+[33m./deps_test.ts[39m
+[999D[K[1/2] Looking for releases: https://deno.land/std@0.109.0/testing/asserts.ts[999D[K[1/2] Attempting update: https://deno.land/std@0.109.0/testing/asserts.ts -> 0.110.0[999D[K[1/2] Update successful: https://deno.land/std@0.109.0/testing/asserts.ts -> 0.110.0[999D[K[2/2] Looking for releases: https://deno.land/std@0.109.0/async/mod.ts[999D[K[2/2] Attempting update: https://deno.land/std@0.109.0/async/mod.ts -> 0.110.0[999D[K[2/2] Update successful: https://deno.land/std@0.109.0/async/mod.ts -> 0.110.0
+[33m./lock.ts[39m
+
+[33m./semaphore.ts[39m
+
+[33m./queue_test.ts[39m
+
+[33m./event.ts[39m
+
+[33m./mod.ts[39m
+
+[33m./deps.ts[39m
+[999D[K[1/2] Looking for releases: https://deno.land/std@0.109.0/async/deferred.ts[999D[K[1/2] Attempting update: https://deno.land/std@0.109.0/async/deferred.ts -> 0.110.0[999D[K[1/2] Update successful: https://deno.land/std@0.109.0/async/deferred.ts -> 0.110.0[999D[K[2/2] Looking for releases: https://deno.land/std@0.109.0/async/deferred.ts[999D[K[2/2] Attempting update: https://deno.land/std@0.109.0/async/deferred.ts -> 0.110.0[999D[K[2/2] Update successful: https://deno.land/std@0.109.0/async/deferred.ts -> 0.110.0
+[33m./event_test.ts[39m
+
+[33m./condition_test.ts[39m
+
+[33m./queue.ts[39m
+
+[33m./state_test.ts[39m
+
+[33m./condition.ts[39m
+
+[33m./examples/lock.ts[39m
+[999D[K[1/1] Looking for releases: https://deno.land/std@0.109.0/async/mod.ts[999D[K[1/1] Attempting update: https://deno.land/std@0.109.0/async/mod.ts -> 0.110.0[999D[K[1/1] Update successful: https://deno.land/std@0.109.0/async/mod.ts -> 0.110.0
+[33m./examples/semaphore.ts[39m
+[999D[K[1/1] Looking for releases: https://deno.land/std@0.109.0/async/mod.ts[999D[K[1/1] Attempting update: https://deno.land/std@0.109.0/async/mod.ts -> 0.110.0[999D[K[1/1] Update successful: https://deno.land/std@0.109.0/async/mod.ts -> 0.110.0
+[33m./examples/event.ts[39m
+[999D[K[1/1] Looking for releases: https://deno.land/std@0.109.0/async/mod.ts[999D[K[1/1] Attempting update: https://deno.land/std@0.109.0/async/mod.ts -> 0.110.0[999D[K[1/1] Update successful: https://deno.land/std@0.109.0/async/mod.ts -> 0.110.0
+[33m./examples/queue.ts[39m
+[999D[K[1/1] Looking for releases: https://deno.land/std@0.109.0/async/mod.ts[999D[K[1/1] Attempting update: https://deno.land/std@0.109.0/async/mod.ts -> 0.110.0[999D[K[1/1] Update successful: https://deno.land/std@0.109.0/async/mod.ts -> 0.110.0
+[33m./examples/condition.ts[39m
+[999D[K[1/1] Looking for releases: https://deno.land/std@0.109.0/async/mod.ts[999D[K[1/1] Attempting update: https://deno.land/std@0.109.0/async/mod.ts -> 0.110.0[999D[K[1/1] Update successful: https://deno.land/std@0.109.0/async/mod.ts -> 0.110.0
+[33m./state.ts[39m
+[1m
+Successfully updated:[22m
+[32mhttps://deno.land/std@0.109.0/testing/asserts.ts[39m 0.109.0 -> 0.110.0[33m[39m
+[32mhttps://deno.land/std@0.109.0/async/mod.ts[39m 0.109.0 -> 0.110.0[33m[39m
+[32mhttps://deno.land/std@0.109.0/async/deferred.ts[39m 0.109.0 -> 0.110.0[33m[39m
+[32mhttps://deno.land/std@0.109.0/async/deferred.ts[39m 0.109.0 -> 0.110.0[33m[39m
+[32mhttps://deno.land/std@0.109.0/async/mod.ts[39m 0.109.0 -> 0.110.0[33m[39m
+[32mhttps://deno.land/std@0.109.0/async/mod.ts[39m 0.109.0 -> 0.110.0[33m[39m
+[32mhttps://deno.land/std@0.109.0/async/mod.ts[39m 0.109.0 -> 0.110.0[33m[39m
+[32mhttps://deno.land/std@0.109.0/async/mod.ts[39m 0.109.0 -> 0.110.0[33m[39m
+[32mhttps://deno.land/std@0.109.0/async/mod.ts[39m 0.109.0 -> 0.110.0[33m[39m
+make[1]: Entering directory '/home/runner/work/deno-async/deno-async'
+make[1]: Leaving directory '/home/runner/work/deno-async/deno-async'
