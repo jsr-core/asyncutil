@@ -3,6 +3,7 @@ name: udd
 on:
   schedule:
     - cron: "0 0 * * *"
+  workflow_dispatch:
 
 jobs:
   udd:
@@ -12,17 +13,26 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           deno-version: "1.x"
-      - run: |
-          make tools
-          make update
+      - name: Install tools
+        run: make tools
+      - name: Update dependencies
+        id: update
+        run: echo "::set-output name=OUTPUT::$(make update)"
+      - name: Commit changes
+        run: |
+          git config user.name '${{ github.actor }}'
+          git config user.email '${{ github.actor }}@users.noreply.github.com'
+          git commit -a -F- <<EOM
+          :package: Update Deno dependencies
+
+          ${{ steps.update.outputs.OUTPUT }}
+          EOM
       - uses: peter-evans/create-pull-request@v3
         with:
-          commit-message: ":package: Update deno dependencies"
-          title: ":package: Update deno dependencies"
-          body: |
-            Automated updates by [deno-udd](https://github.com/hayd/deno-udd)
-            and [create-pull-request](https://github.com/peter-evans/create-pull-request)
-            GitHub action
-          branch: update-deno-dependencies
-          author: GitHub <noreply@github.com>
+          title: ":package: Update Deno dependencies"
+          body: "${{ steps.update.outputs.OUTPUT }}"
+          label: automation
+          branch: automation/update-dependencies
+          branch-suffix: timestamp
           delete-branch: true
+          token: "${{ secrets.PA_TOKEN }}"
