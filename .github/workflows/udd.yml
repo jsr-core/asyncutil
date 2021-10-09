@@ -13,21 +13,19 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           deno-version: "1.x"
-      - name: Install tools
-        run: make tools
       - name: Update dependencies
         run: |
-          make update > output.txt
+          make tools
+          make update > ../output.txt
         env:
           NO_COLOR: 1
-      - name: Read output.txt
+      - name: Read ../output.txt
         id: log
         uses: juliangruber/read-file-action@v1
         with:
-          path: ./output.txt
+          path: ../output.txt
       - name: Commit changes
         run: |
-          rm output.txt
           git config user.name '${{ github.actor }}'
           git config user.email '${{ github.actor }}@users.noreply.github.com'
           git commit -a -F- <<EOM
