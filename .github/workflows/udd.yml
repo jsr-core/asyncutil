@@ -16,8 +16,13 @@ jobs:
       - name: Install tools
         run: make tools
       - name: Update dependencies
-        id: update
-        run: echo "::set-output name=OUTPUT::$(make update)"
+        run: |
+          make update > output.txt
+      - name: Read output.txt
+        id: log
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./output.txt
       - name: Commit changes
         run: |
           git config user.name '${{ github.actor }}'
@@ -25,13 +30,13 @@ jobs:
           git commit -a -F- <<EOM
           :package: Update Deno dependencies
 
-          ${{ steps.update.outputs.OUTPUT }}
+          ${{ steps.log.outputs.content }}
           EOM
       - uses: peter-evans/create-pull-request@v3
         with:
           title: ":package: Update Deno dependencies"
-          body: "${{ steps.update.outputs.OUTPUT }}"
-          label: automation
+          body: "${{ steps.log.outputs.content }}"
+          labels: automation
           branch: automation/update-dependencies
           branch-suffix: timestamp
           delete-branch: true
