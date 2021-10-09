@@ -1,4 +1,4 @@
-name: udd
+name: Dependencies
 
 on:
   schedule:
@@ -18,6 +18,8 @@ jobs:
       - name: Update dependencies
         run: |
           make update > output.txt
+        env:
+          NO_COLOR: 1
       - name: Read output.txt
         id: log
         uses: juliangruber/read-file-action@v1
@@ -25,17 +27,25 @@ jobs:
           path: ./output.txt
       - name: Commit changes
         run: |
+          rm output.txt
           git config user.name '${{ github.actor }}'
           git config user.email '${{ github.actor }}@users.noreply.github.com'
           git commit -a -F- <<EOM
           :package: Update Deno dependencies
 
+          ```
           ${{ steps.log.outputs.content }}
+          ```
           EOM
       - uses: peter-evans/create-pull-request@v3
         with:
           title: ":package: Update Deno dependencies"
-          body: "${{ steps.log.outputs.content }}"
+          body: |
+            The output of `make update` is
+
+            ```
+            ${{ steps.log.outputs.content }}
+            ```
           labels: automation
           branch: automation/update-dependencies
           branch-suffix: timestamp
