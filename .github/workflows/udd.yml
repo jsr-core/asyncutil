@@ -31,9 +31,10 @@ jobs:
           git commit -a -F- <<EOM
           :package: Update Deno dependencies
 
-          ```
-          ${{ steps.log.outputs.content }}
-          ```
+          Update dependencies by udd:
+
+              ${{ steps.log.outputs.content }}
+
           EOM
       - uses: peter-evans/create-pull-request@v3
         with:
