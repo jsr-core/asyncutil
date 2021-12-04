@@ -1,5 +1,5 @@
 import { Condition } from "../mod.ts";
-import { delay } from "https://deno.land/std@0.110.0/async/mod.ts";
+import { delay } from "https://deno.land/std@0.117.0/async/mod.ts";
 
 const cond = new Condition();
 let counter = 0;
