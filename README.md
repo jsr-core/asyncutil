@@ -257,14 +257,14 @@ purpose.
 ```typescript
 import { promiseState } from "https://deno.land/x/async/mod.ts";
 
-const p = Promise.resolve("Resolved promise");
-console.log(await promiseState(p)); // fulfilled
+const p1 = Promise.resolve("Resolved promise");
+console.log(await promiseState(p1)); // fulfilled
 
-const p = Promise.reject("Rejected promise").catch(() => undefined);
-console.log(await promiseState(p)); // rejected
+const p2 = Promise.reject("Rejected promise").catch(() => undefined);
+console.log(await promiseState(p2)); // rejected
 
-const p = new Promise(() => undefined);
-console.log(await promiseState(p)); // pending
+const p3 = new Promise(() => undefined);
+console.log(await promiseState(p3)); // pending
 ```
 
 ## License
