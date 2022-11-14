@@ -1,8 +1,5 @@
 name: Test
 
-env:
-  DENO_VERSION: 1.x
-
 on:
   schedule:
     - cron: "0 7 * * 0"
@@ -10,50 +7,49 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
+  check:
+    strategy:
+      matrix:
+        runner:
+          - ubuntu-latest
+        version:
+          - "1.x"
+          - "1.28.x"
+    runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: denoland/setup-deno@main
+      - uses: actions/checkout@v3
+      - uses: denoland/setup-deno@v1
         with:
-          deno-version: ${{ env.DENO_VERSION }}
-      - name: Lint
-        run: deno lint
-
-  format:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: denoland/setup-deno@main
-        with:
-          deno-version: ${{ env.DENO_VERSION }}
-      - name: Format
+          deno-version: "${{ matrix.version }}"
+      - name: Lint check
         run: |
-          deno fmt --check
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: denoland/setup-deno@main
-        with:
-          deno-version: ${{ env.DENO_VERSION }}
-      - name: Test
+          make lint
+      - name: Format check
         run: |
-          deno test
-        timeout-minutes: 5
-
-  typecheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: denoland/setup-deno@main
-        with:
-          deno-version: ${{ env.DENO_VERSION }}
+          make fmt-check
       - name: Type check
         run: |
-          deno test --unstable --no-run ./*.ts
+          make type-check
+
+  test:
+    strategy:
+      matrix:
+        runner:
+          - windows-latest
+          - macos-latest
+          - ubuntu-latest
+        version:
+          - "1.x"
+          - "1.28.x"
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: "${{ matrix.version }}"
+      - name: Test
+        run: |
+          make test
+        timeout-minutes: 5

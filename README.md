@@ -18,7 +18,7 @@ A lock can be used to guarantee exclusive access to a shared resource.
 
 ```typescript
 import { Lock } from "https://deno.land/x/async/mod.ts";
-import { delay } from "https://deno.land/std@0.86.0/async/mod.ts";
+import { delay } from "https://deno.land/std@0.164.0/async/mod.ts";
 
 const lock = new Lock();
 
@@ -63,7 +63,7 @@ An event can be used to notify multiple tasks that some event has happend.
 
 ```typescript
 import { Event } from "https://deno.land/x/async/mod.ts";
-import { delay } from "https://deno.land/std@0.86.0/async/mod.ts";
+import { delay } from "https://deno.land/std@0.164.0/async/mod.ts";
 
 const event = new Event();
 
@@ -99,7 +99,7 @@ then get exclusive access to a shared resource.
 
 ```typescript
 import { Condition } from "https://deno.land/x/async/mod.ts";
-import { delay } from "https://deno.land/std@0.86.0/async/mod.ts";
+import { delay } from "https://deno.land/std@0.164.0/async/mod.ts";
 
 const cond = new Condition();
 let counter = 0;
@@ -164,7 +164,7 @@ some task calls `release()`.
 
 ```typescript
 import { Semaphore } from "https://deno.land/x/async/mod.ts";
-import { delay } from "https://deno.land/std@0.86.0/async/mod.ts";
+import { delay } from "https://deno.land/std@0.164.0/async/mod.ts";
 
 const sem = new Semaphore(3);
 let n_workers = 0;
@@ -220,7 +220,7 @@ Queue can be used like pipe between two distinct tasks.
 
 ```typescript
 import { Event, Queue } from "https://deno.land/x/async/mod.ts";
-import { delay } from "https://deno.land/std@0.86.0/async/mod.ts";
+import { delay } from "https://deno.land/std@0.164.0/async/mod.ts";
 
 const queue: Queue<string> = new Queue();
 const closed = new Event();
@@ -257,14 +257,14 @@ purpose.
 ```typescript
 import { promiseState } from "https://deno.land/x/async/mod.ts";
 
-const p = Promise.resolve("Resolved promise");
-console.log(await promiseState(p)); // fulfilled
+const p1 = Promise.resolve("Resolved promise");
+console.log(await promiseState(p1)); // fulfilled
 
-const p = Promise.reject("Rejected promise").catch(() => undefined);
-console.log(await promiseState(p)); // rejected
+const p2 = Promise.reject("Rejected promise").catch(() => undefined);
+console.log(await promiseState(p2)); // rejected
 
-const p = new Promise(() => undefined);
-console.log(await promiseState(p)); // pending
+const p3 = new Promise(() => undefined);
+console.log(await promiseState(p3)); // pending
 ```
 
 ## License
