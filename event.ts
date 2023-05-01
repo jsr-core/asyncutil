@@ -1,4 +1,7 @@
-import { Deferred, deferred } from "./deps.ts";
+import {
+  Deferred,
+  deferred,
+} from "https://deno.land/std@0.185.0/async/deferred.ts";
 
 /**
  * An event object. Not thread-safe.

@@ -1,5 +1,5 @@
-import { assertEquals } from "./deps_test.ts";
-import { deferred } from "./deps.ts";
+import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+import { deferred } from "https://deno.land/std@0.186.0/async/deferred.ts";
 import { promiseState } from "./state.ts";
 
 Deno.test(

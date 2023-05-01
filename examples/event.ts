@@ -1,5 +1,5 @@
+import { delay } from "https://deno.land/std@0.185.0/async/mod.ts";
 import { Event } from "../mod.ts";
-import { delay } from "https://deno.land/std@0.164.0/async/mod.ts";
 
 const event = new Event();
 

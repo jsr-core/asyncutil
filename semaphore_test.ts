@@ -1,4 +1,7 @@
-import { assertEquals, assertThrows } from "./deps_test.ts";
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.185.0/testing/asserts.ts";
 import { promiseState } from "./state.ts";
 import { BoundedSemaphore, Semaphore } from "./semaphore.ts";
 

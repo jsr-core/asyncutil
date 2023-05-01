@@ -1,4 +1,7 @@
-import { Deferred, deferred } from "./deps.ts";
+import {
+  Deferred,
+  deferred,
+} from "https://deno.land/std@0.185.0/async/deferred.ts";
 
 /**
  * Implements a mutex lock for Promise. Not thread-safe.

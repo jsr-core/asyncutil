@@ -1,4 +1,8 @@
-import { assertEquals, assertThrows, delay } from "./deps_test.ts";
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.185.0/testing/asserts.ts";
+import { delay } from "https://deno.land/std@0.185.0/async/delay.ts";
 import { promiseState } from "./state.ts";
 import { Condition } from "./condition.ts";
 
