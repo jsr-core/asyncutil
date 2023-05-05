@@ -1,5 +1,5 @@
 import { Event, Queue } from "../mod.ts";
-import { delay } from "https://deno.land/std@0.164.0/async/mod.ts";
+import { delay } from "https://deno.land/std@0.186.0/async/mod.ts";
 
 const queue: Queue<string> = new Queue();
 const closed = new Event();
