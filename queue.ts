@@ -1,120 +1,68 @@
-import { Condition } from "./condition.ts";
-
-export class QueueEmpty extends Error {}
-
-export class QueueFull extends Error {}
+import { Notify, WaitOptions } from "./notify.ts";
 
 /**
- * A first in, first out (FIFO) queue. Non thread-safe.
+ * A queue implementation that allows for adding and removing elements, with optional waiting when
+ * popping elements from an empty queue.
  *
- * If maxsize is less than or equal to zero, the queue size is infinite.
- * If it is an integer greater than 0, then await put() blocks when the
- * queue reaches maxsize until an item is removed by get().
+ * ```ts
+ * import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+ * import { Queue } from "./queue.ts";
  *
- * Not like Python asyncio's Queue, join()/task_done() methods are not
- * implemented.
+ * const queue = new Queue<number>();
+ * queue.push(1);
+ * queue.push(2);
+ * queue.push(3);
+ * assertEquals(await queue.pop(), 1);
+ * assertEquals(await queue.pop(), 2);
+ * assertEquals(await queue.pop(), 3);
+ * ```
+ *
+ * @template T The type of items in the queue.
  */
 export class Queue<T> {
-  #queue: T[];
-  #maxsize: number;
-  #full_notifier: Condition;
-  #empty_notifier: Condition;
+  #notify = new Notify();
+  #items: T[] = [];
 
-  constructor(maxsize = 0) {
-    this.#queue = [];
-    this.#maxsize = maxsize <= 0 ? 0 : maxsize;
-    this.#full_notifier = new Condition();
-    this.#empty_notifier = new Condition();
+  /**
+   * Gets the number of items in the queue.
+   */
+  get size(): number {
+    return this.#items.length;
   }
 
   /**
-   * Return `true` if the queue is empty, `false` otherwise.
+   * Returns true if the queue is currently locked.
    */
-  empty(): boolean {
-    return !this.#queue.length;
+  get locked(): boolean {
+    return this.#notify.waiters > 0;
   }
 
   /**
-   * Return `true` if there are `maxsize` items in the queue.
-   * If the queue was initialized with maxsize=0 (the default), then
-   * `full()` never returns `true`.
+   * Adds an item to the end of the queue and notifies any waiting consumers.
+   *
+   * @param {T} value The item to add to the queue.
    */
-  full(): boolean {
-    return !!this.#maxsize && this.#queue.length === this.#maxsize;
+  push(value: T): void {
+    this.#items.push(value);
+    this.#notify.notify();
   }
 
   /**
-   * Remove and return an item from the queue.
-   * If queue is empty, wait until an item is available.
+   * Removes the next item from the queue, optionally waiting if the queue is currently empty.
+   *
+   * @param {WaitOptions} [options] Optional parameters to pass to the wait operation.
+   * @param {AbortSignal} [options.signal] An optional AbortSignal used to abort the wait operation if the signal is aborted.
+   * @returns {Promise<T>} A promise that resolves to the next item in the queue.
+   * @throws {DOMException} Throws a DOMException with "Aborted" and "AbortError" codes if the wait operation was aborted.
    */
-  async get(): Promise<T> {
-    const value = this.#queue.shift();
-    if (!value) {
-      return new Promise((resolve) => {
-        this.#empty_notifier.with(async () => {
-          await this.#empty_notifier.wait_for(() => !!this.#queue.length);
-          resolve(await this.get());
-        });
-      });
+  async pop({ signal }: WaitOptions = {}): Promise<T> {
+    while (!signal?.aborted) {
+      const value = this.#items.shift();
+      if (value) {
+        return value;
+      }
+      await this.#notify.notified({ signal });
     }
-    await this.#full_notifier.with(() => {
-      this.#full_notifier.notify();
-    });
-    return value;
-  }
-
-  /**
-   * Return an item if one is immediately available, else throw a QueueEmpty error.
-   */
-  get_nowait(): T {
-    const value = this.#queue.shift();
-    if (!value) {
-      throw new QueueEmpty("Queue empty");
-    }
-    this.#full_notifier.with(() => {
-      this.#full_notifier.notify();
-    });
-    return value;
-  }
-
-  /**
-   * Put an item into the queue. If the queue is full, wait until a free slot
-   * is available before adding the item.
-   */
-  async put(value: T): Promise<void> {
-    if (this.#maxsize && this.#queue.length >= this.#maxsize) {
-      await this.#full_notifier.with(async () => {
-        await this.#full_notifier.wait_for(
-          () => this.#queue.length < this.#maxsize,
-        );
-        await this.put(value);
-      });
-      return;
-    }
-    await this.#empty_notifier.with(() => {
-      this.#empty_notifier.notify();
-    });
-    this.#queue.push(value);
-  }
-
-  /**
-   * Put an item into the queue without blocking.
-   * If no free slot is immediately available, throw a QueueFull error.
-   */
-  put_nowait(value: T): void {
-    if (this.#maxsize && this.#queue.length >= this.#maxsize) {
-      throw new QueueFull("Queue full");
-    }
-    this.#empty_notifier.with(() => {
-      this.#empty_notifier.notify();
-    });
-    this.#queue.push(value);
-  }
-
-  /**
-   * Return the number of items in the queue.
-   */
-  qsize(): number {
-    return this.#queue.length;
+    throw new DOMException("Aborted", "AbortError");
   }
 }
