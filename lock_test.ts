@@ -1,76 +1,54 @@
-import { assertEquals, assertThrows, delay } from "./deps_test.ts";
-import { promiseState } from "./state.ts";
+import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+import { AsyncValue } from "./testutil.ts";
 import { Lock } from "./lock.ts";
 
-Deno.test("lock.acquire() acquire lock and lock.release() release lock", () => {
-  const lock = new Lock();
-  assertEquals(lock.locked(), false);
-  lock.acquire();
-  assertEquals(lock.locked(), true);
-  lock.release();
-  assertEquals(lock.locked(), false);
+Deno.test("Lock", async (t) => {
+  await t.step(
+    "Processing over multiple event loops is not atomic",
+    async () => {
+      const count = new AsyncValue(0);
+      const operation = async () => {
+        const v = await count.get();
+        await count.set(v + 1);
+      };
+      await Promise.all([...Array(10)].map(() => operation()));
+      assertEquals(await count.get(), 1);
+    },
+  );
+
+  await t.step(
+    "Processing over multiple event loops is not atomic, but can be changed to atomic by using Lock",
+    async () => {
+      const count = new Lock(new AsyncValue(0));
+      const operation = () => {
+        return count.lock(async (count) => {
+          const v = await count.get();
+          await count.set(v + 1);
+        });
+      };
+      await Promise.all([...Array(10)].map(() => operation()));
+      assertEquals(await count.lock((v) => v.get()), 10);
+    },
+  );
+
+  await t.step(
+    "'lock' should allow only one operation at a time",
+    async () => {
+      let noperations = 0;
+      const results: number[] = [];
+      const count = new Lock(new AsyncValue(0));
+      const operation = () => {
+        return count.lock(async (count) => {
+          noperations += 1;
+          results.push(noperations);
+          const v = await count.get();
+          await count.set(v + 1);
+          noperations -= 1;
+        });
+      };
+      await Promise.all([...Array(10)].map(() => operation()));
+      assertEquals(noperations, 0);
+      assertEquals(results, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+    },
+  );
 });
-
-Deno.test("lock.release() throws an error if lock is not locked", () => {
-  const lock = new Lock();
-  assertThrows(() => lock.release(), Error, "The lock is not locked");
-});
-
-Deno.test(
-  "Combination behaviors of lock.acquire()/lock.release()",
-  async () => {
-    const lock = new Lock();
-
-    assertEquals(lock.locked(), false);
-
-    const fst = lock.acquire();
-    const snd = lock.acquire();
-    const thd = lock.acquire();
-    assertEquals(lock.locked(), true);
-    assertEquals(await promiseState(fst), "fulfilled");
-    assertEquals(await promiseState(snd), "pending");
-    assertEquals(await promiseState(thd), "pending");
-
-    lock.release();
-    assertEquals(lock.locked(), true);
-    assertEquals(await promiseState(fst), "fulfilled");
-    assertEquals(await promiseState(snd), "fulfilled");
-    assertEquals(await promiseState(thd), "pending");
-
-    lock.release();
-    assertEquals(lock.locked(), true);
-    assertEquals(await promiseState(fst), "fulfilled");
-    assertEquals(await promiseState(snd), "fulfilled");
-    assertEquals(await promiseState(thd), "fulfilled");
-
-    lock.release();
-    assertEquals(lock.locked(), false);
-  },
-);
-
-Deno.test("lock.with() invokes callback in exclusive way", async () => {
-  const lock = new Lock();
-  const ns = {
-    a: "",
-  };
-  await lock.with(() => {
-    ns.a = "a";
-  });
-  assertEquals(ns.a, "a");
-});
-
-Deno.test(
-  "lock.with() invokes callback asynchronously in exclusive way",
-  async () => {
-    const lock = new Lock();
-    const ns = {
-      a: "",
-    };
-    await lock.with(async () => {
-      ns.a = "a";
-      await delay(1);
-      ns.a = "b";
-    });
-    assertEquals(ns.a, "b");
-  },
-);

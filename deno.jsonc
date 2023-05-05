@@ -1,0 +1,7 @@
+{
+  "tasks": {
+    "test": "deno test -A --parallel",
+    "check": "deno check $(find . -name '*.ts')",
+    "upgrade": "deno run -A https://deno.land/x/udd/main.ts $(find . -name '*.ts')"
+  }
+}

@@ -1,107 +1,74 @@
-import { Lock } from "./lock.ts";
+import { Notify } from "./notify.ts";
 
 /**
- * A Semaphore object. Not thread-safe.
+ * A semaphore that allows a limited number of concurrent executions of an operation.
  *
- * A semaphore managers an internal counter which is decremented by each `acquire()` call
- * and incremented by each `release()` call. The counter can never go below zero; when
- * `acquire()` finds that it is zero, it blocks, waiting until some task calls `release()`.
+ * ```ts
+ * import { Semaphore } from "./semaphore.ts";
  *
- * The optinal value argument gives the initial value for the internal counter (1 by default).
- * If the given value is less than 0 an Error is thrown.
- *
- * The preferred way to use a Semaphore is `with()` method.
+ * const sem = new Semaphore(5);
+ * const worker = () => {
+ *   return sem.lock(async () => {
+ *     // do something
+ *   });
+ * };
+ * await Promise.all([...Array(10)].map(() => worker()));
+ * ```
  */
 export class Semaphore {
-  protected value: number;
-  #lock: Lock;
+  #notify = new Notify();
+  #rest: number;
 
-  constructor(value = 1) {
-    if (value < 0) {
-      throw new Error("The value must be greater than 0");
+  /**
+   * Creates a new semaphore with the specified limit.
+   *
+   * @param size - The maximum number of times the semaphore can be acquired before blocking.
+   * @throws Error if size is less than 1.
+   */
+  constructor(size: number) {
+    if (size < 0) {
+      throw new Error("The size must be greater than 0");
     }
-    this.#lock = new Lock();
-    this.value = value;
+    this.#rest = size + 1;
   }
 
   /**
-   * Acuire the lock and execute callback to access shared state.
-   *
-   * This is preferred way to use a Semaphore.
+   * Returns true if the semaphore is currently locked.
    */
-  async with(callback: () => void | Promise<void>): Promise<void> {
-    await this.acquire();
+  get locked(): boolean {
+    return this.#rest === 0;
+  }
+
+  /**
+   * Acquires a lock on the semaphore, and invokes the specified function.
+   *
+   * @param f - The function to invoke.
+   * @returns A promise that resolves to the return value of the specified function.
+   */
+  async lock<R>(f: () => R | PromiseLike<R>): Promise<R> {
+    await this.#acquire();
     try {
-      await (callback() ?? Promise.resolve());
+      return await f();
     } finally {
-      this.release();
+      this.#release();
     }
   }
 
-  /**
-   * Acquire a semaphore.
-   *
-   * If the internal counter is greater than zero, decrement it by one and return `true`
-   * immediately. If it is zero, wait until a `release()` is called and return `true`.
-   */
-  async acquire(): Promise<true> {
-    if (this.value > 0) {
-      this.value -= 1;
+  async #acquire(): Promise<void> {
+    if (this.#rest > 0) {
+      this.#rest -= 1;
     }
-    if (this.value === 0) {
-      await this.#lock.acquire();
-    }
-    return true;
-  }
-
-  /**
-   * Release a semaphore, incrementing the internal counter by one. Can wak up a task
-   * waiting to acquire the semaphore.
-   *
-   * Unlike BoundedSemaphore, Semaphore allows making more `release()` calls than
-   * `acquire()` calls.
-   */
-  release(): void {
-    if (this.#lock.locked()) {
-      this.#lock.release();
-    }
-    if (!this.#lock.locked()) {
-      this.value += 1;
+    if (this.#rest === 0) {
+      await this.#notify.notified();
     }
   }
 
-  /**
-   * Return `true` if semaphore can not be acquired immediately.
-   */
-  locked(): boolean {
-    return this.value === 0;
-  }
-}
-
-/**
- * A bounded semaphore object. Not thread-safe.
- *
- * Bounded Semaphore is a version of Semaphore that throws an Error in release() if it increases
- * the internal counte above the initial value.
- */
-export class BoundedSemaphore extends Semaphore {
-  #bound: number;
-
-  constructor(value = 1) {
-    super(value);
-    this.#bound = value;
-  }
-
-  /**
-   * Release a semaphore, incrementing the internal counter by one. Can wak up a task
-   * waiting to acquire the semaphore.
-   */
-  release(): void {
-    if (this.value === this.#bound) {
-      throw new Error(
-        "release() cannot be called more than acquire() with BoundedSemaphore",
-      );
+  #release(): void {
+    if (this.#notify.waiters > 0) {
+      this.#notify.notify();
     }
-    super.release();
+    if (this.#notify.waiters === 0) {
+      this.#rest += 1;
+    }
   }
 }

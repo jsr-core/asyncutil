@@ -4,249 +4,161 @@
 [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/async/mod.ts)
 [![Test](https://github.com/lambdalisue/deno-async/workflows/Test/badge.svg)](https://github.com/lambdalisue/deno-async/actions?query=workflow%3ATest)
 
-Asynchronous primitive modules loosely port from
-[Python's asyncio][python's asyncio] for [Deno][deno].
+Asynchronous primitive modules for [Deno][deno].
 
 [python's asyncio]: https://docs.python.org/3/library/asyncio.html
 [deno]: https://deno.land/
 
 ## Usage
 
-### Lock
+### Barrier
 
-A lock can be used to guarantee exclusive access to a shared resource.
+`Barrier` is a synchronization primitive that allows multiple tasks to wait
+until all of them have reached a certain point of execution before continuing.
 
-```typescript
-import { Lock } from "https://deno.land/x/async/mod.ts";
-import { delay } from "https://deno.land/std@0.164.0/async/mod.ts";
+```ts
+import { Barrier } from "./barrier.ts";
 
-const lock = new Lock();
+const barrier = new Barrier(3);
 
-const task1 = async () => {
-  await lock.with(async () => {
-    await delay(50);
-    console.log("Task1 start");
-    await delay(100);
-    console.log("Task1 end");
-  });
-};
+async function worker(id: number) {
+  console.log(`worker ${id} is waiting`);
+  await barrier.wait();
+  console.log(`worker ${id} is done`);
+}
 
-const task2 = async () => {
-  await lock.with(async () => {
-    await delay(10);
-    console.log("Task2 start");
-    await delay(10);
-    console.log("Task2 end");
-  });
-};
-
-const task3 = async () => {
-  await lock.with(async () => {
-    console.log("Task3 start");
-    await delay(50);
-    console.log("Task3 end");
-  });
-};
-
-await Promise.all([task1(), task2(), task3()]);
-// Task1 start
-// Task1 end
-// Task2 start
-// Task2 end
-// Task3 start
-// Task3 end
+worker(1);
+worker(2);
+worker(3);
 ```
 
-### Event
+### Lock/RwLock
 
-An event can be used to notify multiple tasks that some event has happend.
+`Lock` is a mutual exclusion lock that provides safe concurrent access to a
+shared value.
 
-```typescript
-import { Event } from "https://deno.land/x/async/mod.ts";
-import { delay } from "https://deno.land/std@0.164.0/async/mod.ts";
+```ts
+import { AsyncValue } from "./testutil.ts";
+import { Lock } from "./lock.ts";
 
-const event = new Event();
-
-const task1 = async () => {
-  await event.wait();
-  console.log("Task1 complete");
-};
-
-const task2 = async () => {
-  await event.wait();
-  console.log("Task2 complete");
-};
-
-const task3 = async () => {
-  await delay(100);
-  console.log("Hello");
-  event.set();
-  await delay(100);
-  console.log("World");
-};
-
-await Promise.all([task1(), task2(), task3()]);
-// Hello
-// Task1 complete
-// Task2 complete
-// World
+// Critical section
+const count = new Lock(new AsyncValue(0));
+await count.lock(async (count) => {
+  const v = await count.get();
+  count.set(v + 1);
+});
 ```
 
-### Condition
+`RwLock` is a reader-writer lock implementation that allows multiple concurrent
+reads but only one write at a time. Readers can acquire the lock simultaneously
+as long as there are no writers holding the lock. Writers block all other
+readers and writers until the write operation completes.
 
-A condition primitive can be used by a task to wait for some event to happen and
-then get exclusive access to a shared resource.
+```ts
+import { AsyncValue } from "./testutil.ts";
+import { RwLock } from "./rw_lock.ts";
 
-```typescript
-import { Condition } from "https://deno.land/x/async/mod.ts";
-import { delay } from "https://deno.land/std@0.164.0/async/mod.ts";
+const count = new RwLock(new AsyncValue(0));
 
-const cond = new Condition();
-let counter = 0;
-
-const countUp = () => {
-  cond.with(() => {
-    counter += 1;
-    console.log("Count up");
-    cond.notify();
-    console.log("Notified");
+// rlock should allow multiple readers at a time
+await Promise.all([...Array(10)].map(() => {
+  return count.rlock(async (count) => {
+    console.log(await count.get());
   });
-};
+}));
 
-const task1 = async () => {
-  await cond.with(async () => {
-    await cond.wait();
-    console.log("Task1 complete");
+// lock should allow only one writer at a time
+await Promise.all([...Array(10)].map(() => {
+  return count.lock(async (count) => {
+    const v = await count.get();
+    console.log(v);
+    count.set(v + 1);
   });
-};
-
-const task2 = async () => {
-  await cond.with(async () => {
-    await cond.wait_for(() => counter >= 3);
-    console.log("Task2 complete");
-  });
-};
-
-const task3 = async () => {
-  await delay(100);
-  countUp();
-  await delay(100);
-  countUp();
-  await delay(100);
-  countUp();
-  await delay(100);
-  countUp();
-  await delay(100);
-  countUp();
-};
-
-await Promise.all([task1(), task2(), task3()]);
-// Count up
-// Notified
-// Task1 complete
-// Count up
-// Notified
-// Count up
-// Notified
-// Task2 complete
-// Count up
-// Notified
-// Count up
-// Notified
+}));
 ```
 
-### Semaphore
+### Mutex
 
-A semaphore managers an internal counter which is decremented by each
-`acquire()` call and incremented by each `release()` call. The counter can never
-go below zero; when `acquire()` finds that it is zero, it blocks, waiting until
-some task calls `release()`.
+`Mutex` is a mutex (mutual exclusion) is a synchronization primitive that grants
+exclusive access to a shared resource.
 
-```typescript
-import { Semaphore } from "https://deno.land/x/async/mod.ts";
-import { delay } from "https://deno.land/std@0.164.0/async/mod.ts";
+This is a low-level primitive. Use `Lock` instead of `Mutex` if you need to
+access a shared value concurrently.
 
-const sem = new Semaphore(3);
-let n_workers = 0;
+```ts
+import { AsyncValue } from "./testutil.ts";
+import { Mutex } from "./mutex.ts";
 
-const worker = async () => {
-  await sem.with(async () => {
-    n_workers += 1;
-    console.log(`${n_workers} workers are working...`);
-    await delay(100);
-    console.log(`Complete`);
-    n_workers -= 1;
-  });
-};
+const count = new AsyncValue(0);
 
-const workers = [
-  worker(),
-  worker(),
-  worker(),
-  worker(),
-  worker(),
-  worker(),
-  worker(),
-  worker(),
-  worker(),
-  worker(),
-];
-await Promise.all(workers);
-// 1 workers are working...
-// 2 workers are working...
-// 3 workers are working...
-// Complete
-// 3 workers are working...
-// Complete
-// 3 workers are working...
-// Complete
-// 3 workers are working...
-// Complete
-// 3 workers are working...
-// Complete
-// 3 workers are working...
-// Complete
-// 3 workers are working...
-// Complete
-// 3 workers are working...
-// Complete
-// Complete
-// Complete
+async function doSomething() {
+  const v = await count.get();
+  await count.set(v + 1);
+}
+
+// Critical section
+const mu = new Mutex();
+await mu.acquire();
+try {
+  await doSomething();
+} finally {
+  mu.release();
+}
 ```
 
-### Queue
+### Notify
 
-Queue can be used like pipe between two distinct tasks.
+`Notify` is an async notifier that allows one or more "waiters" to wait for a
+notification.
 
-```typescript
-import { Event, Queue } from "https://deno.land/x/async/mod.ts";
-import { delay } from "https://deno.land/std@0.164.0/async/mod.ts";
+```ts
+import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+import { promiseState } from "./state.ts";
+import { Notify } from "./notify.ts";
 
-const queue: Queue<string> = new Queue();
-const closed = new Event();
+const notify = new Notify();
+const waiter1 = notify.notified();
+const waiter2 = notify.notified();
+notify.notify();
+assertEquals(await promiseState(waiter1), "fulfilled");
+assertEquals(await promiseState(waiter2), "pending");
+notify.notify();
+assertEquals(await promiseState(waiter1), "fulfilled");
+assertEquals(await promiseState(waiter2), "fulfilled");
+```
 
-const consumer = async () => {
-  while (!closed.is_set()) {
-    const recv = await Promise.race([queue.get(), closed.wait()]);
-    if (recv === true) {
-      break;
-    }
-    console.log(`Recv: ${recv}`);
-  }
-};
+### Queue/Stack
 
-const producer = async () => {
-  await delay(100);
-  await queue.put("Hello");
-  await delay(100);
-  await queue.put("World");
-  await delay(100);
-  closed.set();
-};
+`Queue` is a queue implementation that allows for adding and removing elements,
+with optional waiting when popping elements from an empty queue.
 
-await Promise.all([consumer(), producer()]);
-// Recv: Hello
-// Recv: World
+```ts
+import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+import { Queue } from "./queue.ts";
+
+const queue = new Queue<number>();
+queue.push(1);
+queue.push(2);
+queue.push(3);
+assertEquals(await queue.pop(), 1);
+assertEquals(await queue.pop(), 2);
+assertEquals(await queue.pop(), 3);
+```
+
+`Stack` is a stack implementation that allows for adding and removing elements,
+with optional waiting when popping elements from an empty stack.
+
+```ts
+import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+import { Stack } from "./stack.ts";
+
+const stack = new Stack<number>();
+stack.push(1);
+stack.push(2);
+stack.push(3);
+assertEquals(await stack.pop(), 3);
+assertEquals(await stack.pop(), 2);
+assertEquals(await stack.pop(), 1);
 ```
 
 ### promiseState
@@ -265,6 +177,21 @@ console.log(await promiseState(p2)); // rejected
 
 const p3 = new Promise(() => undefined);
 console.log(await promiseState(p3)); // pending
+```
+
+### AsyncValue
+
+`AsyncValue` is a class that wraps a value and allows it to be set
+asynchronously.
+
+```ts
+import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+import { AsyncValue } from "./testutil.ts";
+
+const v = new AsyncValue(0);
+assertEquals(await v.get(), 0);
+await v.set(1);
+assertEquals(await v.get(), 1);
 ```
 
 ## License
