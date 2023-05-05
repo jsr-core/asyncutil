@@ -1,74 +1,56 @@
-import {
-  Deferred,
-  deferred,
-} from "https://deno.land/std@0.185.0/async/deferred.ts";
+import { Mutex } from "./mutex.ts";
 
 /**
- * Implements a mutex lock for Promise. Not thread-safe.
+ * A mutual exclusion lock that provides safe concurrent access to a shared value.
  *
- * A lock can be used to guarantee exclusive access to a shared resource.
+ * ```ts
+ * import { AsyncValue } from "./testutil.ts";
+ * import { Lock } from "./lock.ts";
+ *
+ * // Critical section
+ * const count = new Lock(new AsyncValue(0));
+ * await count.lock(async (count) => {
+ *   const v = await count.get();
+ *   count.set(v + 1);
+ * });
+ * ```
+ *
+ * @typeParam T - The type of the shared value.
  */
-export class Lock {
-  #waiters: Deferred<void>[];
+export class Lock<T> {
+  #mu = new Mutex();
+  #value: T;
 
-  constructor() {
-    this.#waiters = [];
+  /**
+   * Constructs a new lock with the given initial value.
+   *
+   * @param value - The initial value of the lock.
+   */
+  constructor(value: T) {
+    this.#value = value;
   }
 
   /**
-   * Acuire the lock and execute callback to access shared state.
-   *
-   * This is preferred way to use a Lock.
+   * Returns true if the lock is currently locked, false otherwise.
    */
-  async with(callback: () => void | Promise<void>): Promise<void> {
-    await this.acquire();
+  get locked(): boolean {
+    return this.#mu.locked;
+  }
+
+  /**
+   * Acquires the lock and applies the given function to the shared value,
+   * returning the result.
+   *
+   * @typeParam R - The return type of the function.
+   * @param f - The function to apply to the shared value.
+   * @returns A Promise that resolves with the result of the function.
+   */
+  async lock<R>(f: (value: T) => R | PromiseLike<R>): Promise<R> {
+    await this.#mu.acquire();
     try {
-      await (callback() ?? Promise.resolve());
+      return await f(this.#value);
     } finally {
-      this.release();
+      this.#mu.release();
     }
-  }
-
-  /**
-   * Acuire the lock.
-   *
-   * This method waits until the lock is *unlocked*, sets it to *locked* and returns `true`.
-   *
-   * When more than one coroutine is blocked in `acquire()` waiting for the lock to be unlocked, only
-   * one coroutine eventually proceeds.
-   *
-   * Acquiring a lock is *fair*, the coroutine that proceeds will be the first coroutine that started
-   * waiting on the lock.
-   */
-  async acquire(): Promise<true> {
-    const waiters = [...this.#waiters];
-    this.#waiters.push(deferred());
-    if (waiters.length) {
-      await Promise.all(waiters);
-    }
-    return true;
-  }
-
-  /**
-   * Release the lock.
-   *
-   * When the lock is *locked*, reset it to *unlocked* and return.
-   *
-   * If the lock is *unlocked*, an Error is thrown.
-   */
-  release(): void {
-    const waiter = this.#waiters.shift();
-    if (waiter) {
-      waiter.resolve();
-    } else {
-      throw new Error("The lock is not locked");
-    }
-  }
-
-  /**
-   * Return `true` if the lock is *locked*.
-   */
-  locked(): boolean {
-    return !!this.#waiters.length;
   }
 }

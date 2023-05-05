@@ -7,6 +7,9 @@ import {
  * A mutex (mutual exclusion) is a synchronization primitive that grants
  * exclusive access to a shared resource.
  *
+ * This is a low-level primitive. Use `Lock` instead of `Mutex` if you need to access a shared value
+ * concurrently.
+ *
  * ```ts
  * import { AsyncValue } from "./testutil.ts";
  * import { Mutex } from "./mutex.ts";
