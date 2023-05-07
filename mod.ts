@@ -6,4 +6,5 @@ export * from "./queue.ts";
 export * from "./rw_lock.ts";
 export * from "./semaphore.ts";
 export * from "./stack.ts";
+export * from "./state.ts";
 export * from "./testutil.ts";
