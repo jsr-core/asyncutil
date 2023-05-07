@@ -161,6 +161,23 @@ assertEquals(await stack.pop(), 2);
 assertEquals(await stack.pop(), 1);
 ```
 
+### Semaphore
+
+A semaphore that allows a limited number of concurrent executions of an
+operation.
+
+```ts
+import { Semaphore } from "./semaphore.ts";
+
+const sem = new Semaphore(5);
+const worker = () => {
+  return sem.lock(async () => {
+    // do something
+  });
+};
+await Promise.all([...Array(10)].map(() => worker()));
+```
+
 ### promiseState
 
 `promiseState` is used to determine the state of the promise. Mainly for testing
