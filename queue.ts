@@ -5,7 +5,7 @@ import { Notify, WaitOptions } from "./notify.ts";
  * popping elements from an empty queue.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
  * import { Queue } from "https://deno.land/x/async@$MODULE_VERSION/queue.ts";
  *
  * const queue = new Queue<number>();

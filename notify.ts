@@ -1,17 +1,12 @@
-import {
-  Deferred,
-  deferred,
-} from "https://deno.land/std@0.211.0/async/deferred.ts";
-
-export type WaitOptions = {
+export interface WaitOptions {
   signal?: AbortSignal;
-};
+}
 
 /**
  * Async notifier that allows one or more "waiters" to wait for a notification.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
  * import { promiseState } from "https://deno.land/x/async@$MODULE_VERSION/state.ts";
  * import { Notify } from "https://deno.land/x/async@$MODULE_VERSION/notify.ts";
  *
@@ -27,7 +22,11 @@ export type WaitOptions = {
  * ```
  */
 export class Notify {
-  #waiters: Deferred<void>[] = [];
+  #waiters: {
+    promise: Promise<void>;
+    resolve: () => void;
+    reject: (reason?: unknown) => void;
+  }[] = [];
 
   /**
    * Returns the number of waiters that are waiting for notification.
@@ -70,14 +69,14 @@ export class Notify {
     if (signal?.aborted) {
       throw new DOMException("Aborted", "AbortError");
     }
-    const waiter = deferred<void>();
+    const waiter = Promise.withResolvers<void>();
     const abort = () => {
       removeItem(this.#waiters, waiter);
       waiter.reject(new DOMException("Aborted", "AbortError"));
     };
     signal?.addEventListener("abort", abort, { once: true });
     this.#waiters.push(waiter);
-    await waiter;
+    await waiter.promise;
     signal?.removeEventListener("abort", abort);
   }
 }

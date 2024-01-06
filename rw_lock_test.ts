@@ -1,5 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.211.0/testing/asserts.ts";
-import { deferred } from "https://deno.land/std@0.211.0/async/deferred.ts";
+import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
 import { promiseState } from "./state.ts";
 import { AsyncValue } from "./testutil.ts";
 import { RwLock } from "./rw_lock.ts";
@@ -77,7 +76,7 @@ Deno.test("RwLock", async (t) => {
     "'lock' should block until all readers are done",
     async () => {
       const count = new RwLock(new AsyncValue(0));
-      const waiter = deferred();
+      const { promise, resolve } = Promise.withResolvers<void>();
       const writer = () => {
         return count.lock(() => {
           // Do nothing
@@ -85,14 +84,14 @@ Deno.test("RwLock", async (t) => {
       };
       const reader = () => {
         return count.rlock(async () => {
-          await waiter;
+          await promise;
         });
       };
       const r = reader();
       const w = writer();
       assertEquals(await promiseState(r), "pending");
       assertEquals(await promiseState(w), "pending");
-      waiter.resolve();
+      resolve();
       assertEquals(await promiseState(r), "fulfilled");
       assertEquals(await promiseState(w), "fulfilled");
     },
@@ -102,10 +101,10 @@ Deno.test("RwLock", async (t) => {
     "'rlock' should block until all writers are done",
     async () => {
       const count = new RwLock(new AsyncValue(0));
-      const waiter = deferred();
+      const { promise, resolve } = Promise.withResolvers<void>();
       const writer = () => {
         return count.lock(async () => {
-          await waiter;
+          await promise;
         });
       };
       const reader = () => {
@@ -117,7 +116,7 @@ Deno.test("RwLock", async (t) => {
       const r = reader();
       assertEquals(await promiseState(w), "pending");
       assertEquals(await promiseState(r), "pending");
-      waiter.resolve();
+      resolve();
       assertEquals(await promiseState(w), "fulfilled");
       assertEquals(await promiseState(r), "fulfilled");
     },

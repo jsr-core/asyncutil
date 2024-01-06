@@ -5,7 +5,7 @@ import { Notify, WaitOptions } from "./notify.ts";
  * popping elements from an empty stack.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
  * import { Stack } from "https://deno.land/x/async@$MODULE_VERSION/stack.ts";
  *
  * const stack = new Stack<number>();

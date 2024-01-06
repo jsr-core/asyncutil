@@ -1,8 +1,3 @@
-import {
-  Deferred,
-  deferred,
-} from "https://deno.land/std@0.211.0/async/deferred.ts";
-
 /**
  * A mutex (mutual exclusion) is a synchronization primitive that grants
  * exclusive access to a shared resource.
@@ -32,7 +27,7 @@ import {
  * ```
  */
 export class Mutex {
-  #waiters: Deferred<void>[] = [];
+  #waiters: { promise: Promise<void>; resolve: () => void }[] = [];
 
   /**
    * Returns true if the mutex is locked, false otherwise.
@@ -47,9 +42,10 @@ export class Mutex {
    */
   async acquire(): Promise<void> {
     const waiters = [...this.#waiters];
-    this.#waiters.push(deferred());
+    const { promise, resolve } = Promise.withResolvers<void>();
+    this.#waiters.push({ promise, resolve });
     if (waiters.length) {
-      await Promise.all(waiters);
+      await Promise.all(waiters.map(({ promise }) => promise));
     }
   }
 

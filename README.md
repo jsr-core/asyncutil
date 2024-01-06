@@ -112,7 +112,7 @@ try {
 notification.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
 import { promiseState } from "https://deno.land/x/async@$MODULE_VERSION/state.ts";
 import { Notify } from "https://deno.land/x/async@$MODULE_VERSION/notify.ts";
 
@@ -133,7 +133,7 @@ assertEquals(await promiseState(waiter2), "fulfilled");
 with optional waiting when popping elements from an empty queue.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
 import { Queue } from "https://deno.land/x/async@$MODULE_VERSION/queue.ts";
 
 const queue = new Queue<number>();
@@ -149,7 +149,7 @@ assertEquals(await queue.pop(), 3);
 with optional waiting when popping elements from an empty stack.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
 import { Stack } from "https://deno.land/x/async@$MODULE_VERSION/stack.ts";
 
 const stack = new Stack<number>();
@@ -202,7 +202,7 @@ console.log(await promiseState(p3)); // pending
 asynchronously.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
 import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
 
 const v = new AsyncValue(0);
