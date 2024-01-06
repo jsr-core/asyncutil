@@ -11,8 +11,8 @@ import {
  * concurrently.
  *
  * ```ts
- * import { AsyncValue } from "./testutil.ts";
- * import { Mutex } from "./mutex.ts";
+ * import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
+ * import { Mutex } from "https://deno.land/x/async@$MODULE_VERSION/mutex.ts";
  *
  * const count = new AsyncValue(0);
  *

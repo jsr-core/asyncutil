@@ -6,7 +6,7 @@ import { Notify, WaitOptions } from "./notify.ts";
  *
  * ```ts
  * import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
- * import { Stack } from "./stack.ts";
+ * import { Stack } from "https://deno.land/x/async@$MODULE_VERSION/stack.ts";
  *
  * const stack = new Stack<number>();
  * stack.push(1);

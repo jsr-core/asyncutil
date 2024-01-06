@@ -17,7 +17,7 @@ Asynchronous primitive modules for [Deno][deno].
 until all of them have reached a certain point of execution before continuing.
 
 ```ts
-import { Barrier } from "./barrier.ts";
+import { Barrier } from "https://deno.land/x/async@$MODULE_VERSION/barrier.ts";
 
 const barrier = new Barrier(3);
 
@@ -38,8 +38,8 @@ worker(3);
 shared value.
 
 ```ts
-import { AsyncValue } from "./testutil.ts";
-import { Lock } from "./lock.ts";
+import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
+import { Lock } from "https://deno.land/x/async@$MODULE_VERSION/lock.ts";
 
 // Critical section
 const count = new Lock(new AsyncValue(0));
@@ -55,8 +55,8 @@ as long as there are no writers holding the lock. Writers block all other
 readers and writers until the write operation completes.
 
 ```ts
-import { AsyncValue } from "./testutil.ts";
-import { RwLock } from "./rw_lock.ts";
+import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
+import { RwLock } from "https://deno.land/x/async@$MODULE_VERSION/rw_lock.ts";
 
 const count = new RwLock(new AsyncValue(0));
 
@@ -86,8 +86,8 @@ This is a low-level primitive. Use `Lock` instead of `Mutex` if you need to
 access a shared value concurrently.
 
 ```ts
-import { AsyncValue } from "./testutil.ts";
-import { Mutex } from "./mutex.ts";
+import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
+import { Mutex } from "https://deno.land/x/async@$MODULE_VERSION/mutex.ts";
 
 const count = new AsyncValue(0);
 
@@ -113,8 +113,8 @@ notification.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
-import { promiseState } from "./state.ts";
-import { Notify } from "./notify.ts";
+import { promiseState } from "https://deno.land/x/async@$MODULE_VERSION/state.ts";
+import { Notify } from "https://deno.land/x/async@$MODULE_VERSION/notify.ts";
 
 const notify = new Notify();
 const waiter1 = notify.notified();
@@ -134,7 +134,7 @@ with optional waiting when popping elements from an empty queue.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
-import { Queue } from "./queue.ts";
+import { Queue } from "https://deno.land/x/async@$MODULE_VERSION/queue.ts";
 
 const queue = new Queue<number>();
 queue.push(1);
@@ -150,7 +150,7 @@ with optional waiting when popping elements from an empty stack.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
-import { Stack } from "./stack.ts";
+import { Stack } from "https://deno.land/x/async@$MODULE_VERSION/stack.ts";
 
 const stack = new Stack<number>();
 stack.push(1);
@@ -167,7 +167,7 @@ A semaphore that allows a limited number of concurrent executions of an
 operation.
 
 ```ts
-import { Semaphore } from "./semaphore.ts";
+import { Semaphore } from "https://deno.land/x/async@$MODULE_VERSION/semaphore.ts";
 
 const sem = new Semaphore(5);
 const worker = () => {
@@ -184,7 +184,7 @@ await Promise.all([...Array(10)].map(() => worker()));
 purpose.
 
 ```typescript
-import { promiseState } from "https://deno.land/x/async/mod.ts";
+import { promiseState } from "https://deno.land/x/async@$MODULE_VERSION/mod.ts";
 
 const p1 = Promise.resolve("Resolved promise");
 console.log(await promiseState(p1)); // fulfilled
@@ -203,7 +203,7 @@ asynchronously.
 
 ```ts
 import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
-import { AsyncValue } from "./testutil.ts";
+import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
 
 const v = new AsyncValue(0);
 assertEquals(await v.get(), 0);

@@ -12,8 +12,8 @@ export type WaitOptions = {
  *
  * ```ts
  * import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
- * import { promiseState } from "./state.ts";
- * import { Notify } from "./notify.ts";
+ * import { promiseState } from "https://deno.land/x/async@$MODULE_VERSION/state.ts";
+ * import { Notify } from "https://deno.land/x/async@$MODULE_VERSION/notify.ts";
  *
  * const notify = new Notify();
  * const waiter1 = notify.notified();
