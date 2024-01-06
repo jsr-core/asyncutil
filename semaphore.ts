@@ -4,7 +4,7 @@ import { Notify } from "./notify.ts";
  * A semaphore that allows a limited number of concurrent executions of an operation.
  *
  * ```ts
- * import { Semaphore } from "./semaphore.ts";
+ * import { Semaphore } from "https://deno.land/x/async@$MODULE_VERSION/semaphore.ts";
  *
  * const sem = new Semaphore(5);
  * const worker = () => {

@@ -1,5 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
-import { deferred } from "https://deno.land/std@0.186.0/async/deferred.ts";
+import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
 import { promiseState } from "./state.ts";
 
 Deno.test(
@@ -28,11 +27,11 @@ Deno.test(
 );
 
 Deno.test("promiseState() returns refreshed status", async () => {
-  const d = deferred();
+  const { promise, resolve } = Promise.withResolvers<void>();
   const p = (async () => {
-    await d;
+    await promise;
   })();
   assertEquals(await promiseState(p), "pending");
-  d.resolve();
+  resolve();
   assertEquals(await promiseState(p), "fulfilled");
 });

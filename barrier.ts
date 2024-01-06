@@ -10,7 +10,7 @@ import { Notify } from "./notify.ts";
  * unblock and continue executing.
  *
  * ```ts
- * import { Barrier } from "./barrier.ts";
+ * import { Barrier } from "https://deno.land/x/async@$MODULE_VERSION/barrier.ts";
  *
  * const barrier = new Barrier(3);
  *

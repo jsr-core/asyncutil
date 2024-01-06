@@ -8,3 +8,4 @@ export * from "./semaphore.ts";
 export * from "./stack.ts";
 export * from "./state.ts";
 export * from "./testutil.ts";
+export * from "./wait_group.ts";

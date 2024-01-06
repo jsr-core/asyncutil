@@ -4,8 +4,8 @@ import { Mutex } from "./mutex.ts";
  * A mutual exclusion lock that provides safe concurrent access to a shared value.
  *
  * ```ts
- * import { AsyncValue } from "./testutil.ts";
- * import { Lock } from "./lock.ts";
+ * import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
+ * import { Lock } from "https://deno.land/x/async@$MODULE_VERSION/lock.ts";
  *
  * // Critical section
  * const count = new Lock(new AsyncValue(0));

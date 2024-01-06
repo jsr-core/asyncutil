@@ -1,21 +1,24 @@
 import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { Barrier } from "./barrier.ts";
+import { delay } from "https://deno.land/std@0.211.0/async/delay.ts";
+import { WaitGroup } from "./wait_group.ts";
 
-Deno.test("Barrier", async (t) => {
+Deno.test("WaitGroup", async (t) => {
   await t.step(
-    "'wait' waits until the number of waiters reached the size specified to the barrier",
+    "Ensure WaitGroup synchronizes multiple workers",
     async () => {
-      const barrier = new Barrier(5);
+      const wg = new WaitGroup();
       const workers = [];
       const results: string[] = [];
       for (let i = 0; i < 5; i++) {
         workers.push((async () => {
+          wg.add(1);
           results.push(`before wait ${i}`);
-          await barrier.wait();
+          await delay(100);
           results.push(`after wait ${i}`);
+          wg.done();
         })());
       }
-      await Promise.all(workers);
+      await wg.wait();
       assertEquals(results, [
         "before wait 0",
         "before wait 1",

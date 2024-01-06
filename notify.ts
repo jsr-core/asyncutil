@@ -1,19 +1,14 @@
-import {
-  Deferred,
-  deferred,
-} from "https://deno.land/std@0.186.0/async/deferred.ts";
-
-export type WaitOptions = {
+export interface WaitOptions {
   signal?: AbortSignal;
-};
+}
 
 /**
  * Async notifier that allows one or more "waiters" to wait for a notification.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@0.186.0/testing/asserts.ts";
- * import { promiseState } from "./state.ts";
- * import { Notify } from "./notify.ts";
+ * import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
+ * import { promiseState } from "https://deno.land/x/async@$MODULE_VERSION/state.ts";
+ * import { Notify } from "https://deno.land/x/async@$MODULE_VERSION/notify.ts";
  *
  * const notify = new Notify();
  * const waiter1 = notify.notified();
@@ -27,7 +22,11 @@ export type WaitOptions = {
  * ```
  */
 export class Notify {
-  #waiters: Deferred<void>[] = [];
+  #waiters: {
+    promise: Promise<void>;
+    resolve: () => void;
+    reject: (reason?: unknown) => void;
+  }[] = [];
 
   /**
    * Returns the number of waiters that are waiting for notification.
@@ -41,20 +40,22 @@ export class Notify {
    * If there are fewer than `n` waiters, all waiters are notified.
    */
   notify(n = 1): void {
-    for (const _ of Array(n)) {
-      const waiter = this.#waiters.shift();
-      if (!waiter) {
-        break;
-      }
+    const head = this.#waiters.slice(0, n);
+    const tail = this.#waiters.slice(n);
+    for (const waiter of head) {
       waiter.resolve();
     }
+    this.#waiters = tail;
   }
 
   /**
    * Notifies all waiters that are waiting for notification. Resolves each of the notified waiters.
    */
   notifyAll(): void {
-    this.notify(this.#waiters.length);
+    for (const waiter of this.#waiters) {
+      waiter.resolve();
+    }
+    this.#waiters = [];
   }
 
   /**
@@ -70,14 +71,14 @@ export class Notify {
     if (signal?.aborted) {
       throw new DOMException("Aborted", "AbortError");
     }
-    const waiter = deferred<void>();
+    const waiter = Promise.withResolvers<void>();
     const abort = () => {
       removeItem(this.#waiters, waiter);
       waiter.reject(new DOMException("Aborted", "AbortError"));
     };
     signal?.addEventListener("abort", abort, { once: true });
     this.#waiters.push(waiter);
-    await waiter;
+    await waiter.promise;
     signal?.removeEventListener("abort", abort);
   }
 }
