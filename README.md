@@ -32,6 +32,32 @@ worker(2);
 worker(3);
 ```
 
+### WaitGroup
+
+`WaitGroup` is a synchronization primitive that enables promises to coordinate
+and synchronize their execution. It is particularly useful in scenarios where a
+specific number of tasks must complete before the program can proceed.
+
+```ts
+import { delay } from "https://deno.land/std@0.211.0/async/delay.ts";
+import { WaitGroup } from "https://deno.land/x/async@$MODULE_VERSION/wait_group.ts";
+
+const wg = new WaitGroup();
+
+async function worker(id: number) {
+  wg.add(1);
+  console.log(`worker ${id} is waiting`);
+  await delay(100);
+  console.log(`worker ${id} is done`);
+  wg.done();
+}
+
+worker(1);
+worker(2);
+worker(3);
+await wg.wait();
+```
+
 ### Lock/RwLock
 
 `Lock` is a mutual exclusion lock that provides safe concurrent access to a
