@@ -40,20 +40,22 @@ export class Notify {
    * If there are fewer than `n` waiters, all waiters are notified.
    */
   notify(n = 1): void {
-    for (const _ of Array(n)) {
-      const waiter = this.#waiters.shift();
-      if (!waiter) {
-        break;
-      }
+    const head = this.#waiters.slice(0, n);
+    const tail = this.#waiters.slice(n);
+    for (const waiter of head) {
       waiter.resolve();
     }
+    this.#waiters = tail;
   }
 
   /**
    * Notifies all waiters that are waiting for notification. Resolves each of the notified waiters.
    */
   notifyAll(): void {
-    this.notify(this.#waiters.length);
+    for (const waiter of this.#waiters) {
+      waiter.resolve();
+    }
+    this.#waiters = [];
   }
 
   /**
