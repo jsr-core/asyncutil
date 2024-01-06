@@ -1,7 +1,7 @@
 import {
   Deferred,
   deferred,
-} from "https://deno.land/std@0.186.0/async/deferred.ts";
+} from "https://deno.land/std@0.211.0/async/deferred.ts";
 
 export type WaitOptions = {
   signal?: AbortSignal;
