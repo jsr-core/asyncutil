@@ -93,7 +93,7 @@ await Promise.all(
     return count.rlock(async (count) => {
       console.log(await count.get());
     });
-  })
+  }),
 );
 
 // lock should allow only one writer at a time
@@ -104,7 +104,7 @@ await Promise.all(
       console.log(v);
       count.set(v + 1);
     });
-  })
+  }),
 );
 ```
 
