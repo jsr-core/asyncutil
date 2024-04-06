@@ -1,4 +1,4 @@
-import { Notify, WaitOptions } from "./notify.ts";
+import { Notify, type WaitOptions } from "./notify.ts";
 
 /**
  * A queue implementation that allows for adding and removing elements, with optional waiting when

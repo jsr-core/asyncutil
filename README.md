@@ -1,6 +1,7 @@
 # async
 
-[![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno)](https://deno.land/x/async)
+[![jsr](https://img.shields.io/jsr/v/%40lambdalisue/async?logo=javascript&logoColor=white)](https://jsr.io/@lambdalisue/async)
+[![denoland](https://img.shields.io/github/v/release/lambdalisue/deno-async?logo=deno&label=denoland)](https://github.com/lambdalisue/deno-async/releases)
 [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/async/mod.ts)
 [![Test](https://github.com/lambdalisue/deno-async/workflows/Test/badge.svg)](https://github.com/lambdalisue/deno-async/actions?query=workflow%3ATest)
 
@@ -87,20 +88,24 @@ import { RwLock } from "https://deno.land/x/async@$MODULE_VERSION/rw_lock.ts";
 const count = new RwLock(new AsyncValue(0));
 
 // rlock should allow multiple readers at a time
-await Promise.all([...Array(10)].map(() => {
-  return count.rlock(async (count) => {
-    console.log(await count.get());
-  });
-}));
+await Promise.all(
+  [...Array(10)].map(() => {
+    return count.rlock(async (count) => {
+      console.log(await count.get());
+    });
+  }),
+);
 
 // lock should allow only one writer at a time
-await Promise.all([...Array(10)].map(() => {
-  return count.lock(async (count) => {
-    const v = await count.get();
-    console.log(v);
-    count.set(v + 1);
-  });
-}));
+await Promise.all(
+  [...Array(10)].map(() => {
+    return count.lock(async (count) => {
+      const v = await count.get();
+      console.log(v);
+      count.set(v + 1);
+    });
+  }),
+);
 ```
 
 ### Mutex
