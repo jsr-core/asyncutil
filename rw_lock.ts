@@ -36,7 +36,7 @@ export class RwLock<T> {
   /**
    * Creates a new `RwLock` with the specified initial value.
    *
-   * @param value - The initial value of the lock.
+   * @param value The initial value of the lock.
    */
   constructor(value: T) {
     this.#value = value;
@@ -46,16 +46,16 @@ export class RwLock<T> {
    * Acquires the lock for both reading and writing, and invokes the specified function with the current
    * value of the lock. All other readers and writers will be blocked until the function completes.
    *
-   * @param f - The function to invoke.
+   * @param fn The function to invoke.
    * @returns A promise that resolves to the return value of the specified function.
    */
-  async lock<R>(f: (value: T) => R | PromiseLike<R>): Promise<R> {
+  async lock<R>(fn: (value: T) => R | PromiseLike<R>): Promise<R> {
     await Promise.all([
       this.#write.acquire(),
       this.#read.acquire(),
     ]);
     try {
-      return await f(this.#value);
+      return await fn(this.#value);
     } finally {
       this.#read.release();
       this.#write.release();
@@ -66,16 +66,16 @@ export class RwLock<T> {
    * Acquires the lock for reading, and invokes the specified function with the current value of the lock.
    * Other readers can acquire the lock simultaneously, but any writers will be blocked until the function completes.
    *
-   * @param f - The function to invoke.
+   * @param fn The function to invoke.
    * @returns A promise that resolves to the return value of the specified function.
    */
-  async rlock<R>(f: (value: T) => R | PromiseLike<R>): Promise<R> {
+  async rlock<R>(fn: (value: T) => R | PromiseLike<R>): Promise<R> {
     if (this.#write.locked) {
       await this.#write.acquire();
     }
     this.#read.acquire();
     try {
-      return await f(this.#value);
+      return await fn(this.#value);
     } finally {
       this.#read.release();
       this.#write.release();

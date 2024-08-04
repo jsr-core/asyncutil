@@ -32,8 +32,8 @@ export class Barrier {
   /**
    * Creates a new `Barrier` that blocks until `size` threads have called `wait`.
    *
-   * @param size - The number of threads that must reach the barrier before it unblocks.
-   * @throws Error if size is negative.
+   * @param size The number of threads that must reach the barrier before it unblocks.
+   * @throws Error if the size is negative.
    */
   constructor(size: number) {
     if (size < 0) {

@@ -10,8 +10,6 @@
  * await v.set(1);
  * assertEquals(await v.get(), 1);
  * ```
- *
- * @typeParam T - The type of the value.
  */
 export class AsyncValue<T> {
   #value: T;
@@ -19,7 +17,7 @@ export class AsyncValue<T> {
   /**
    * Constructs a new AsyncValue with the given initial value.
    *
-   * @param value - The initial value.
+   * @param value The initial value.
    */
   constructor(value: T) {
     this.#value = value;

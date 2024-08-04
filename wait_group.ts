@@ -32,6 +32,7 @@ export class WaitGroup {
   /**
    * Adds the specified `delta` to the WaitGroup counter. If the counter becomes
    * zero, it signals all waiting promises to proceed.
+   *
    * @param delta The number to add to the counter. It can be positive or negative.
    */
   add(delta: number): void {
@@ -50,6 +51,7 @@ export class WaitGroup {
 
   /**
    * Returns a promise that waits for the WaitGroup counter to reach zero.
+   *
    * @returns A Promise that resolves when the counter becomes zero.
    */
   wait(): Promise<void> {

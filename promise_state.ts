@@ -5,6 +5,15 @@ export type PromiseState = "fulfilled" | "rejected" | "pending";
 
 /**
  * Return state (fulfilled/rejected/pending) of a promise
+ *
+ * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { promiseState } from "@core/asyncutil/promise-state";
+ *
+ * assertEquals(await promiseState(Promise.resolve("value")), "fulfilled");
+ * assertEquals(await promiseState(Promise.reject("error")), "rejected");
+ * assertEquals(await promiseState(new Promise(() => {})), "pending");
+ * ```
  */
 export async function promiseState(p: Promise<unknown>): Promise<PromiseState> {
   // NOTE:

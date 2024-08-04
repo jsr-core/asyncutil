@@ -38,6 +38,7 @@ export class Mutex {
 
   /**
    * Acquire the mutex, waiting if necessary for it to become available.
+   *
    * @returns A Promise that resolves when the mutex is acquired.
    */
   async acquire(): Promise<void> {

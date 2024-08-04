@@ -1,7 +1,3 @@
-export interface WaitOptions {
-  signal?: AbortSignal;
-}
-
 /**
  * Async notifier that allows one or more "waiters" to wait for a notification.
  *
@@ -13,9 +9,11 @@ export interface WaitOptions {
  * const notify = new Notify();
  * const waiter1 = notify.notified();
  * const waiter2 = notify.notified();
+ *
  * notify.notify();
  * assertEquals(await promiseState(waiter1), "fulfilled");
  * assertEquals(await promiseState(waiter2), "pending");
+ *
  * notify.notify();
  * assertEquals(await promiseState(waiter1), "fulfilled");
  * assertEquals(await promiseState(waiter2), "fulfilled");
@@ -62,12 +60,8 @@ export class Notify {
    * Asynchronously waits for notification. The caller's execution is suspended until
    * the `notify` method is called. The method returns a Promise that resolves when the caller is notified.
    * Optionally takes an AbortSignal to abort the waiting if the signal is aborted.
-   *
-   * @param options Optional parameters.
-   * @param options.signal An optional AbortSignal to abort the waiting if the signal is aborted.
-   * @throws {DOMException} If the signal is aborted.
    */
-  async notified({ signal }: WaitOptions = {}): Promise<void> {
+  async notified({ signal }: { signal?: AbortSignal } = {}): Promise<void> {
     if (signal?.aborted) {
       throw new DOMException("Aborted", "AbortError");
     }
