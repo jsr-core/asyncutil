@@ -1,6 +1,8 @@
 # asyncutil
 
+[![JSR](https://jsr.io/badges/@core/asyncutil)](https://jsr.io/@core/asyncutil)
 [![Test](https://github.com/jsr-core/asyncutil/actions/workflows/test.yml/badge.svg)](https://github.com/jsr-core/asyncutil/actions/workflows/test.yml)
+[![Codecov](https://codecov.io/github/jsr-core/asyncutil/graph/badge.svg?token=pfbLRGU5AM)](https://codecov.io/github/jsr-core/asyncutil)
 
 Asynchronous primitive utility pack.
 
