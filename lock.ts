@@ -43,11 +43,7 @@ export class Lock<T> {
    * @returns A Promise that resolves with the result of the function.
    */
   async lock<R>(fn: (value: T) => R | PromiseLike<R>): Promise<R> {
-    await this.#mu.acquire();
-    try {
-      return await fn(this.#value);
-    } finally {
-      this.#mu.release();
-    }
+    using _lock = await this.#mu.acquire();
+    return await fn(this.#value);
   }
 }

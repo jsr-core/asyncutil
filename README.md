@@ -108,13 +108,12 @@ async function doSomething() {
   await count.set(v + 1);
 }
 
-// Critical section
 const mu = new Mutex();
-await mu.acquire();
-try {
+
+// Critical section
+{
+  using _lock = await mu.acquire();
   await doSomething();
-} finally {
-  mu.release();
 }
 ```
 

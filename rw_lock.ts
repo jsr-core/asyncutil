@@ -50,16 +50,9 @@ export class RwLock<T> {
    * @returns A promise that resolves to the return value of the specified function.
    */
   async lock<R>(fn: (value: T) => R | PromiseLike<R>): Promise<R> {
-    await Promise.all([
-      this.#write.acquire(),
-      this.#read.acquire(),
-    ]);
-    try {
-      return await fn(this.#value);
-    } finally {
-      this.#read.release();
-      this.#write.release();
-    }
+    using _wlock = await this.#write.acquire();
+    using _rlock = await this.#read.acquire();
+    return await fn(this.#value);
   }
 
   /**
@@ -70,15 +63,11 @@ export class RwLock<T> {
    * @returns A promise that resolves to the return value of the specified function.
    */
   async rlock<R>(fn: (value: T) => R | PromiseLike<R>): Promise<R> {
-    if (this.#write.locked) {
-      await this.#write.acquire();
-    }
-    this.#read.acquire();
-    try {
-      return await fn(this.#value);
-    } finally {
-      this.#read.release();
-      this.#write.release();
-    }
+    using _wlock = this.#write.locked
+      ? await this.#write.acquire()
+      : { [Symbol.dispose]: () => {} };
+    // Acquire the read lock without waiting to allow multiple readers to access the lock.
+    using _rlock = this.#read.acquire();
+    return await fn(this.#value);
   }
 }

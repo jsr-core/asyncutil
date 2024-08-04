@@ -16,18 +16,17 @@
  *   await count.set(v + 1);
  * }
  *
- * // Critical section
  * const mu = new Mutex();
- * await mu.acquire();
- * try {
+ *
+ * // Critical section
+ * {
+ *   using _lock = await mu.acquire();
  *   await doSomething();
- * } finally {
- *   mu.release();
  * }
  * ```
  */
 export class Mutex {
-  #waiters: { promise: Promise<void>; resolve: () => void }[] = [];
+  #waiters: Promise<void>[] = [];
 
   /**
    * Returns true if the mutex is locked, false otherwise.
@@ -37,26 +36,22 @@ export class Mutex {
   }
 
   /**
-   * Acquire the mutex, waiting if necessary for it to become available.
+   * Acquire the mutex and return a promise with disposable that releases the mutex when disposed.
    *
-   * @returns A Promise that resolves when the mutex is acquired.
+   * @returns A Promise with Disposable that releases the mutex when disposed.
    */
-  async acquire(): Promise<void> {
+  acquire(): Promise<Disposable> & Disposable {
     const waiters = [...this.#waiters];
     const { promise, resolve } = Promise.withResolvers<void>();
-    this.#waiters.push({ promise, resolve });
-    if (waiters.length) {
-      await Promise.all(waiters.map(({ promise }) => promise));
-    }
-  }
-
-  /**
-   * Release the mutex, allowing the next pending acquirer to proceed.
-   */
-  release(): void {
-    const waiter = this.#waiters.shift();
-    if (waiter) {
-      waiter.resolve();
-    }
+    this.#waiters.push(promise);
+    const disposable = {
+      [Symbol.dispose]: () => {
+        resolve();
+      },
+    };
+    return Object.assign(
+      Promise.all(waiters).then(() => disposable),
+      disposable,
+    );
   }
 }
