@@ -3,7 +3,7 @@ import {
   assertEquals,
   assertRejects,
 } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { promiseState } from "./state.ts";
+import { promiseState } from "./promise_state.ts";
 import { Notify } from "./notify.ts";
 
 Deno.test("Notify", async (t) => {

@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { promiseState } from "./state.ts";
+import { promiseState } from "./promise_state.ts";
 import { AsyncValue } from "./testutil.ts";
 import { RwLock } from "./rw_lock.ts";
 

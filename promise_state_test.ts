@@ -1,5 +1,5 @@
-import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { promiseState } from "./state.ts";
+import { assertEquals } from "@std/assert";
+import { promiseState } from "./promise_state.ts";
 
 Deno.test(
   "promiseState() returns 'fulfilled' for resolved promise",
