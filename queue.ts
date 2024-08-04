@@ -32,7 +32,7 @@ export class Queue<T> {
    * Returns true if the queue is currently locked.
    */
   get locked(): boolean {
-    return this.#notify.waiters > 0;
+    return this.#notify.waiterCount > 0;
   }
 
   /**

@@ -29,7 +29,7 @@ export class Notify {
   /**
    * Returns the number of waiters that are waiting for notification.
    */
-  get waiters(): number {
+  get waiterCount(): number {
     return this.#waiters.length;
   }
 

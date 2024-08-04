@@ -64,10 +64,10 @@ export class Semaphore {
   }
 
   #release(): void {
-    if (this.#notify.waiters > 0) {
+    if (this.#notify.waiterCount > 0) {
       this.#notify.notify();
     }
-    if (this.#notify.waiters === 0) {
+    if (this.#notify.waiterCount === 0) {
       this.#rest += 1;
     }
   }
