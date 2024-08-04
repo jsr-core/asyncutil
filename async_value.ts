@@ -2,8 +2,8 @@
  * A class that wraps a value and allows it to be set asynchronously.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
- * import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
+ * import { assertEquals } from "@std/assert";
+ * import { AsyncValue } from "@core/asyncutil/async-value";
  *
  * const v = new AsyncValue(0);
  * assertEquals(await v.get(), 0);

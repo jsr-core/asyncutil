@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { AsyncValue } from "./testutil.ts";
+import { AsyncValue } from "./async_value.ts";
 import { Lock } from "./lock.ts";
 
 Deno.test("Lock", async (t) => {

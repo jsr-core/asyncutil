@@ -1,3 +1,4 @@
+export * from "./async_value.ts";
 export * from "./barrier.ts";
 export * from "./lock.ts";
 export * from "./mutex.ts";
@@ -7,5 +8,4 @@ export * from "./queue.ts";
 export * from "./rw_lock.ts";
 export * from "./semaphore.ts";
 export * from "./stack.ts";
-export * from "./testutil.ts";
 export * from "./wait_group.ts";
