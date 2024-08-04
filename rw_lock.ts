@@ -6,8 +6,8 @@ import { Mutex } from "./mutex.ts";
  * Writers block all other readers and writers until the write operation completes.
  *
  * ```ts
- * import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
- * import { RwLock } from "https://deno.land/x/async@$MODULE_VERSION/rw_lock.ts";
+ * import { AsyncValue } from "@core/asyncutil/async-value";
+ * import { RwLock } from "@core/asyncutil/rw-lock";
  *
  * const count = new RwLock(new AsyncValue(0));
  *
@@ -36,7 +36,7 @@ export class RwLock<T> {
   /**
    * Creates a new `RwLock` with the specified initial value.
    *
-   * @param value - The initial value of the lock.
+   * @param value The initial value of the lock.
    */
   constructor(value: T) {
     this.#value = value;
@@ -46,39 +46,28 @@ export class RwLock<T> {
    * Acquires the lock for both reading and writing, and invokes the specified function with the current
    * value of the lock. All other readers and writers will be blocked until the function completes.
    *
-   * @param f - The function to invoke.
+   * @param fn The function to invoke.
    * @returns A promise that resolves to the return value of the specified function.
    */
-  async lock<R>(f: (value: T) => R | PromiseLike<R>): Promise<R> {
-    await Promise.all([
-      this.#write.acquire(),
-      this.#read.acquire(),
-    ]);
-    try {
-      return await f(this.#value);
-    } finally {
-      this.#read.release();
-      this.#write.release();
-    }
+  async lock<R>(fn: (value: T) => R | PromiseLike<R>): Promise<R> {
+    using _wlock = await this.#write.acquire();
+    using _rlock = await this.#read.acquire();
+    return await fn(this.#value);
   }
 
   /**
    * Acquires the lock for reading, and invokes the specified function with the current value of the lock.
    * Other readers can acquire the lock simultaneously, but any writers will be blocked until the function completes.
    *
-   * @param f - The function to invoke.
+   * @param fn The function to invoke.
    * @returns A promise that resolves to the return value of the specified function.
    */
-  async rlock<R>(f: (value: T) => R | PromiseLike<R>): Promise<R> {
-    if (this.#write.locked) {
-      await this.#write.acquire();
-    }
-    this.#read.acquire();
-    try {
-      return await f(this.#value);
-    } finally {
-      this.#read.release();
-      this.#write.release();
-    }
+  async rlock<R>(fn: (value: T) => R | PromiseLike<R>): Promise<R> {
+    using _wlock = this.#write.locked
+      ? await this.#write.acquire()
+      : { [Symbol.dispose]: () => {} };
+    // Acquire the read lock without waiting to allow multiple readers to access the lock.
+    using _rlock = this.#read.acquire();
+    return await fn(this.#value);
   }
 }

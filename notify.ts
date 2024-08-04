@@ -1,21 +1,19 @@
-export interface WaitOptions {
-  signal?: AbortSignal;
-}
-
 /**
  * Async notifier that allows one or more "waiters" to wait for a notification.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
- * import { promiseState } from "https://deno.land/x/async@$MODULE_VERSION/state.ts";
- * import { Notify } from "https://deno.land/x/async@$MODULE_VERSION/notify.ts";
+ * import { assertEquals } from "@std/assert";
+ * import { promiseState } from "@core/asyncutil/promise-state";
+ * import { Notify } from "@core/asyncutil/notify";
  *
  * const notify = new Notify();
  * const waiter1 = notify.notified();
  * const waiter2 = notify.notified();
+ *
  * notify.notify();
  * assertEquals(await promiseState(waiter1), "fulfilled");
  * assertEquals(await promiseState(waiter2), "pending");
+ *
  * notify.notify();
  * assertEquals(await promiseState(waiter1), "fulfilled");
  * assertEquals(await promiseState(waiter2), "fulfilled");
@@ -31,7 +29,7 @@ export class Notify {
   /**
    * Returns the number of waiters that are waiting for notification.
    */
-  get waiters(): number {
+  get waiterCount(): number {
     return this.#waiters.length;
   }
 
@@ -62,19 +60,15 @@ export class Notify {
    * Asynchronously waits for notification. The caller's execution is suspended until
    * the `notify` method is called. The method returns a Promise that resolves when the caller is notified.
    * Optionally takes an AbortSignal to abort the waiting if the signal is aborted.
-   *
-   * @param options Optional parameters.
-   * @param options.signal An optional AbortSignal to abort the waiting if the signal is aborted.
-   * @throws {DOMException} If the signal is aborted.
    */
-  async notified({ signal }: WaitOptions = {}): Promise<void> {
+  async notified({ signal }: { signal?: AbortSignal } = {}): Promise<void> {
     if (signal?.aborted) {
-      throw new DOMException("Aborted", "AbortError");
+      throw signal.reason;
     }
     const waiter = Promise.withResolvers<void>();
     const abort = () => {
       removeItem(this.#waiters, waiter);
-      waiter.reject(new DOMException("Aborted", "AbortError"));
+      waiter.reject(signal!.reason);
     };
     signal?.addEventListener("abort", abort, { once: true });
     this.#waiters.push(waiter);

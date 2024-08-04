@@ -2,16 +2,14 @@
  * A class that wraps a value and allows it to be set asynchronously.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
- * import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
+ * import { assertEquals } from "@std/assert";
+ * import { AsyncValue } from "@core/asyncutil/async-value";
  *
  * const v = new AsyncValue(0);
  * assertEquals(await v.get(), 0);
  * await v.set(1);
  * assertEquals(await v.get(), 1);
  * ```
- *
- * @typeParam T - The type of the value.
  */
 export class AsyncValue<T> {
   #value: T;
@@ -19,7 +17,7 @@ export class AsyncValue<T> {
   /**
    * Constructs a new AsyncValue with the given initial value.
    *
-   * @param value - The initial value.
+   * @param value The initial value.
    */
   constructor(value: T) {
     this.#value = value;

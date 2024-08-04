@@ -4,7 +4,7 @@ import { Notify } from "./notify.ts";
  * A semaphore that allows a limited number of concurrent executions of an operation.
  *
  * ```ts
- * import { Semaphore } from "https://deno.land/x/async@$MODULE_VERSION/semaphore.ts";
+ * import { Semaphore } from "@core/asyncutil/semaphore";
  *
  * const sem = new Semaphore(5);
  * const worker = () => {
@@ -22,8 +22,8 @@ export class Semaphore {
   /**
    * Creates a new semaphore with the specified limit.
    *
-   * @param size - The maximum number of times the semaphore can be acquired before blocking.
-   * @throws Error if size is less than 1.
+   * @param size The maximum number of times the semaphore can be acquired before blocking.
+   * @throws Error if the size is less than 1.
    */
   constructor(size: number) {
     if (size < 0) {
@@ -42,13 +42,13 @@ export class Semaphore {
   /**
    * Acquires a lock on the semaphore, and invokes the specified function.
    *
-   * @param f - The function to invoke.
+   * @param fn The function to invoke.
    * @returns A promise that resolves to the return value of the specified function.
    */
-  async lock<R>(f: () => R | PromiseLike<R>): Promise<R> {
+  async lock<R>(fn: () => R | PromiseLike<R>): Promise<R> {
     await this.#acquire();
     try {
-      return await f();
+      return await fn();
     } finally {
       this.#release();
     }
@@ -64,10 +64,10 @@ export class Semaphore {
   }
 
   #release(): void {
-    if (this.#notify.waiters > 0) {
+    if (this.#notify.waiterCount > 0) {
       this.#notify.notify();
     }
-    if (this.#notify.waiters === 0) {
+    if (this.#notify.waiterCount === 0) {
       this.#rest += 1;
     }
   }

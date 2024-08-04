@@ -1,5 +1,5 @@
-import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { AsyncValue } from "./testutil.ts";
+import { assertEquals } from "@std/assert";
+import { AsyncValue } from "./async_value.ts";
 import { Mutex } from "./mutex.ts";
 
 Deno.test("Mutex", async (t) => {
@@ -22,13 +22,9 @@ Deno.test("Mutex", async (t) => {
       const mu = new Mutex();
       const count = new AsyncValue(0);
       const operation = async () => {
-        await mu.acquire();
-        try {
-          const v = await count.get();
-          await count.set(v + 1);
-        } finally {
-          mu.release();
-        }
+        using _lock = await mu.acquire();
+        const v = await count.get();
+        await count.set(v + 1);
       };
       await Promise.all([...Array(10)].map(() => operation()));
       assertEquals(await count.get(), 10);

@@ -1,9 +1,6 @@
-import { delay } from "https://deno.land/std@0.211.0/async/delay.ts";
-import {
-  assertEquals,
-  assertRejects,
-} from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { promiseState } from "./state.ts";
+import { delay } from "@std/async/delay";
+import { assertEquals, assertRejects } from "@std/assert";
+import { promiseState } from "./promise_state.ts";
 import { Stack } from "./stack.ts";
 
 Deno.test("Stack", async (t) => {
@@ -36,12 +33,13 @@ Deno.test("Stack", async (t) => {
   await t.step("'pop' with signal aborted after delay", async () => {
     const controller = new AbortController();
     const q = new Stack<number>();
+    const reason = new Error("Aborted");
 
-    delay(100).then(() => controller.abort());
+    delay(100).then(() => controller.abort(reason));
 
     await assertRejects(
       () => q.pop({ signal: controller.signal }),
-      DOMException,
+      Error,
       "Aborted",
     );
   });
@@ -49,12 +47,13 @@ Deno.test("Stack", async (t) => {
   await t.step("'pop' with signal already aborted", async () => {
     const controller = new AbortController();
     const q = new Stack<number>();
+    const reason = new Error("Aborted");
 
-    controller.abort();
+    controller.abort(reason);
 
     await assertRejects(
       () => q.pop({ signal: controller.signal }),
-      DOMException,
+      Error,
       "Aborted",
     );
   });

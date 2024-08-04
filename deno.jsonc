@@ -1,17 +1,57 @@
 {
   "lock": false,
-  "name": "@lambdalisue/async",
+  "name": "@core/asyncutil",
   "version": "0.0.0",
-  "exports": "./mod.ts",
+  "exports": {
+    ".": "./mod.ts",
+    "./async-value": "./async_value.ts",
+    "./barrier": "./barrier.ts",
+    "./lock": "./lock.ts",
+    "./mutex": "./mutex.ts",
+    "./notify": "./notify.ts",
+    "./promise-state": "./promise_state.ts",
+    "./queue": "./queue.ts",
+    "./rw-lock": "./rw_lock.ts",
+    "./semaphore": "./semaphore.ts",
+    "./stack": "./stack.ts",
+    "./wait-group": "./wait_group.ts"
+  },
+  "exclude": [
+    ".coverage/**"
+  ],
+  "publish": {
+    "include": [
+      "**/*.ts",
+      "README.md",
+      "LICENSE"
+    ],
+    "exclude": [
+      "**/*_test.ts",
+      ".*"
+    ]
+  },
   "imports": {
-    "https://deno.land/x/async@$MODULE_VERSION/": "./"
+    "@core/asyncutil": "./mod.ts",
+    "@core/asyncutil/async-value": "./async_value.ts",
+    "@core/asyncutil/barrier": "./barrier.ts",
+    "@core/asyncutil/lock": "./lock.ts",
+    "@core/asyncutil/mutex": "./mutex.ts",
+    "@core/asyncutil/notify": "./notify.ts",
+    "@core/asyncutil/promise-state": "./promise_state.ts",
+    "@core/asyncutil/queue": "./queue.ts",
+    "@core/asyncutil/rw-lock": "./rw_lock.ts",
+    "@core/asyncutil/semaphore": "./semaphore.ts",
+    "@core/asyncutil/stack": "./stack.ts",
+    "@core/asyncutil/wait-group": "./wait_group.ts",
+    "@std/assert": "jsr:@std/assert@^1.0.2",
+    "@std/async": "jsr:@std/async@^1.0.2"
   },
   "tasks": {
+    "check": "deno check ./**/*.ts",
     "test": "deno test -A --parallel --shuffle --doc",
     "test:coverage": "deno task test --coverage=.coverage",
-    "check": "deno check ./**/*.ts",
     "coverage": "deno coverage .coverage",
-    "upgrade": "deno run -q -A https://deno.land/x/molt@0.14.2/cli.ts ./**/*.ts",
-    "upgrade:commit": "deno task -q upgrade --commit --prefix :package: --pre-commit=fmt"
+    "update": "deno run --allow-env --allow-read --allow-write=. --allow-run=git,deno --allow-net=jsr.io,registry.npmjs.org jsr:@molt/cli ./*.ts",
+    "update:commit": "deno task -q update --commit --prefix :package: --pre-commit=fmt,lint"
   }
 }

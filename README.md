@@ -1,16 +1,25 @@
-# async
+# asyncutil
 
-[![jsr](https://img.shields.io/jsr/v/%40lambdalisue/async?logo=javascript&logoColor=white)](https://jsr.io/@lambdalisue/async)
-[![denoland](https://img.shields.io/github/v/release/lambdalisue/deno-async?logo=deno&label=denoland)](https://github.com/lambdalisue/deno-async/releases)
-[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/async/mod.ts)
-[![Test](https://github.com/lambdalisue/deno-async/workflows/Test/badge.svg)](https://github.com/lambdalisue/deno-async/actions?query=workflow%3ATest)
+[![Test](https://github.com/jsr-core/asyncutil/actions/workflows/test.yml/badge.svg)](https://github.com/jsr-core/asyncutil/actions/workflows/test.yml)
 
-Asynchronous primitive modules for [Deno][deno].
-
-[python's asyncio]: https://docs.python.org/3/library/asyncio.html
-[deno]: https://deno.land/
+Asynchronous primitive utility pack.
 
 ## Usage
+
+### AsyncValue
+
+`AsyncValue` is a class that wraps a value and allows it to be set
+asynchronously.
+
+```ts
+import { assertEquals } from "@std/assert";
+import { AsyncValue } from "@core/asyncutil/async-value";
+
+const v = new AsyncValue(0);
+assertEquals(await v.get(), 0);
+await v.set(1);
+assertEquals(await v.get(), 1);
+```
 
 ### Barrier
 
@@ -18,7 +27,7 @@ Asynchronous primitive modules for [Deno][deno].
 until all of them have reached a certain point of execution before continuing.
 
 ```ts
-import { Barrier } from "https://deno.land/x/async@$MODULE_VERSION/barrier.ts";
+import { Barrier } from "@core/asyncutil/barrier";
 
 const barrier = new Barrier(3);
 
@@ -33,40 +42,14 @@ worker(2);
 worker(3);
 ```
 
-### WaitGroup
-
-`WaitGroup` is a synchronization primitive that enables promises to coordinate
-and synchronize their execution. It is particularly useful in scenarios where a
-specific number of tasks must complete before the program can proceed.
-
-```ts
-import { delay } from "https://deno.land/std@0.211.0/async/delay.ts";
-import { WaitGroup } from "https://deno.land/x/async@$MODULE_VERSION/wait_group.ts";
-
-const wg = new WaitGroup();
-
-async function worker(id: number) {
-  wg.add(1);
-  console.log(`worker ${id} is waiting`);
-  await delay(100);
-  console.log(`worker ${id} is done`);
-  wg.done();
-}
-
-worker(1);
-worker(2);
-worker(3);
-await wg.wait();
-```
-
 ### Lock/RwLock
 
 `Lock` is a mutual exclusion lock that provides safe concurrent access to a
 shared value.
 
 ```ts
-import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
-import { Lock } from "https://deno.land/x/async@$MODULE_VERSION/lock.ts";
+import { AsyncValue } from "@core/asyncutil/async-value";
+import { Lock } from "@core/asyncutil/lock";
 
 // Critical section
 const count = new Lock(new AsyncValue(0));
@@ -82,8 +65,8 @@ as long as there are no writers holding the lock. Writers block all other
 readers and writers until the write operation completes.
 
 ```ts
-import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
-import { RwLock } from "https://deno.land/x/async@$MODULE_VERSION/rw_lock.ts";
+import { AsyncValue } from "@core/asyncutil/async-value";
+import { RwLock } from "@core/asyncutil/rw-lock";
 
 const count = new RwLock(new AsyncValue(0));
 
@@ -117,8 +100,8 @@ This is a low-level primitive. Use `Lock` instead of `Mutex` if you need to
 access a shared value concurrently.
 
 ```ts
-import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
-import { Mutex } from "https://deno.land/x/async@$MODULE_VERSION/mutex.ts";
+import { AsyncValue } from "@core/asyncutil/async-value";
+import { Mutex } from "@core/asyncutil/mutex";
 
 const count = new AsyncValue(0);
 
@@ -127,13 +110,12 @@ async function doSomething() {
   await count.set(v + 1);
 }
 
-// Critical section
 const mu = new Mutex();
-await mu.acquire();
-try {
+
+// Critical section
+{
+  using _lock = await mu.acquire();
   await doSomething();
-} finally {
-  mu.release();
 }
 ```
 
@@ -143,9 +125,9 @@ try {
 notification.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { promiseState } from "https://deno.land/x/async@$MODULE_VERSION/state.ts";
-import { Notify } from "https://deno.land/x/async@$MODULE_VERSION/notify.ts";
+import { assertEquals } from "@std/assert";
+import { promiseState } from "@core/asyncutil/promise-state";
+import { Notify } from "@core/asyncutil/notify";
 
 const notify = new Notify();
 const waiter1 = notify.notified();
@@ -158,14 +140,32 @@ assertEquals(await promiseState(waiter1), "fulfilled");
 assertEquals(await promiseState(waiter2), "fulfilled");
 ```
 
+### promiseState
+
+`promiseState` is used to determine the state of the promise. Mainly for testing
+purpose.
+
+```typescript
+import { promiseState } from "@core/asyncutil/promise-state";
+
+const p1 = Promise.resolve("Resolved promise");
+console.log(await promiseState(p1)); // fulfilled
+
+const p2 = Promise.reject("Rejected promise").catch(() => undefined);
+console.log(await promiseState(p2)); // rejected
+
+const p3 = new Promise(() => undefined);
+console.log(await promiseState(p3)); // pending
+```
+
 ### Queue/Stack
 
 `Queue` is a queue implementation that allows for adding and removing elements,
 with optional waiting when popping elements from an empty queue.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { Queue } from "https://deno.land/x/async@$MODULE_VERSION/queue.ts";
+import { assertEquals } from "@std/assert";
+import { Queue } from "@core/asyncutil/queue";
 
 const queue = new Queue<number>();
 queue.push(1);
@@ -180,8 +180,8 @@ assertEquals(await queue.pop(), 3);
 with optional waiting when popping elements from an empty stack.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { Stack } from "https://deno.land/x/async@$MODULE_VERSION/stack.ts";
+import { assertEquals } from "@std/assert";
+import { Stack } from "@core/asyncutil/stack";
 
 const stack = new Stack<number>();
 stack.push(1);
@@ -198,7 +198,7 @@ A semaphore that allows a limited number of concurrent executions of an
 operation.
 
 ```ts
-import { Semaphore } from "https://deno.land/x/async@$MODULE_VERSION/semaphore.ts";
+import { Semaphore } from "@core/asyncutil/semaphore";
 
 const sem = new Semaphore(5);
 const worker = () => {
@@ -209,37 +209,30 @@ const worker = () => {
 await Promise.all([...Array(10)].map(() => worker()));
 ```
 
-### promiseState
+### WaitGroup
 
-`promiseState` is used to determine the state of the promise. Mainly for testing
-purpose.
-
-```typescript
-import { promiseState } from "https://deno.land/x/async@$MODULE_VERSION/mod.ts";
-
-const p1 = Promise.resolve("Resolved promise");
-console.log(await promiseState(p1)); // fulfilled
-
-const p2 = Promise.reject("Rejected promise").catch(() => undefined);
-console.log(await promiseState(p2)); // rejected
-
-const p3 = new Promise(() => undefined);
-console.log(await promiseState(p3)); // pending
-```
-
-### AsyncValue
-
-`AsyncValue` is a class that wraps a value and allows it to be set
-asynchronously.
+`WaitGroup` is a synchronization primitive that enables promises to coordinate
+and synchronize their execution. It is particularly useful in scenarios where a
+specific number of tasks must complete before the program can proceed.
 
 ```ts
-import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
+import { delay } from "@std/async/delay";
+import { WaitGroup } from "@core/asyncutil/wait-group";
 
-const v = new AsyncValue(0);
-assertEquals(await v.get(), 0);
-await v.set(1);
-assertEquals(await v.get(), 1);
+const wg = new WaitGroup();
+
+async function worker(id: number) {
+  wg.add(1);
+  console.log(`worker ${id} is waiting`);
+  await delay(100);
+  console.log(`worker ${id} is done`);
+  wg.done();
+}
+
+worker(1);
+worker(2);
+worker(3);
+await wg.wait();
 ```
 
 ## License

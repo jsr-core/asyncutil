@@ -6,8 +6,8 @@ import { Notify } from "./notify.ts";
  * a specific number of tasks must complete before the program can proceed.
  *
  * ```ts
- * import { delay } from "https://deno.land/std@0.211.0/async/delay.ts";
- * import { WaitGroup } from "https://deno.land/x/async@$MODULE_VERSION/wait_group.ts";
+ * import { delay } from "@std/async/delay";
+ * import { WaitGroup } from "@core/asyncutil/wait-group";
  *
  * const wg = new WaitGroup();
  *
@@ -32,6 +32,7 @@ export class WaitGroup {
   /**
    * Adds the specified `delta` to the WaitGroup counter. If the counter becomes
    * zero, it signals all waiting promises to proceed.
+   *
    * @param delta The number to add to the counter. It can be positive or negative.
    */
   add(delta: number): void {
@@ -50,9 +51,10 @@ export class WaitGroup {
 
   /**
    * Returns a promise that waits for the WaitGroup counter to reach zero.
+   *
    * @returns A Promise that resolves when the counter becomes zero.
    */
-  wait(): Promise<void> {
-    return this.#notify.notified();
+  wait({ signal }: { signal?: AbortSignal } = {}): Promise<void> {
+    return this.#notify.notified({ signal });
   }
 }

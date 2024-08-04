@@ -4,8 +4,8 @@ import { Mutex } from "./mutex.ts";
  * A mutual exclusion lock that provides safe concurrent access to a shared value.
  *
  * ```ts
- * import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
- * import { Lock } from "https://deno.land/x/async@$MODULE_VERSION/lock.ts";
+ * import { AsyncValue } from "@core/asyncutil/async-value";
+ * import { Lock } from "@core/asyncutil/lock";
  *
  * // Critical section
  * const count = new Lock(new AsyncValue(0));
@@ -14,8 +14,6 @@ import { Mutex } from "./mutex.ts";
  *   count.set(v + 1);
  * });
  * ```
- *
- * @typeParam T - The type of the shared value.
  */
 export class Lock<T> {
   #mu = new Mutex();
@@ -24,7 +22,7 @@ export class Lock<T> {
   /**
    * Constructs a new lock with the given initial value.
    *
-   * @param value - The initial value of the lock.
+   * @param value The initial value of the lock.
    */
   constructor(value: T) {
     this.#value = value;
@@ -41,16 +39,11 @@ export class Lock<T> {
    * Acquires the lock and applies the given function to the shared value,
    * returning the result.
    *
-   * @typeParam R - The return type of the function.
-   * @param f - The function to apply to the shared value.
+   * @param fn The function to apply to the shared value.
    * @returns A Promise that resolves with the result of the function.
    */
-  async lock<R>(f: (value: T) => R | PromiseLike<R>): Promise<R> {
-    await this.#mu.acquire();
-    try {
-      return await f(this.#value);
-    } finally {
-      this.#mu.release();
-    }
+  async lock<R>(fn: (value: T) => R | PromiseLike<R>): Promise<R> {
+    using _lock = await this.#mu.acquire();
+    return await fn(this.#value);
   }
 }

@@ -10,7 +10,7 @@ import { Notify } from "./notify.ts";
  * unblock and continue executing.
  *
  * ```ts
- * import { Barrier } from "https://deno.land/x/async@$MODULE_VERSION/barrier.ts";
+ * import { Barrier } from "@core/asyncutil/barrier";
  *
  * const barrier = new Barrier(3);
  *
@@ -32,8 +32,8 @@ export class Barrier {
   /**
    * Creates a new `Barrier` that blocks until `size` threads have called `wait`.
    *
-   * @param size - The number of threads that must reach the barrier before it unblocks.
-   * @throws Error if size is negative.
+   * @param size The number of threads that must reach the barrier before it unblocks.
+   * @throws Error if the size is negative.
    */
   constructor(size: number) {
     if (size < 0) {
@@ -46,15 +46,16 @@ export class Barrier {
    * Wait for all threads to reach the barrier.
    * Blocks until all threads reach the barrier.
    */
-  async wait(): Promise<void> {
+  async wait({ signal }: { signal?: AbortSignal } = {}): Promise<void> {
+    signal?.throwIfAborted();
     this.#rest -= 1;
     if (this.#rest === 0) {
       await Promise.all([
-        this.#notify.notified(),
+        this.#notify.notified({ signal }),
         this.#notify.notifyAll(),
       ]);
     } else {
-      await this.#notify.notified();
+      await this.#notify.notified({ signal });
     }
   }
 }

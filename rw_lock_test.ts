@@ -1,6 +1,6 @@
-import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { promiseState } from "./state.ts";
-import { AsyncValue } from "./testutil.ts";
+import { assertEquals } from "@std/assert";
+import { promiseState } from "./promise_state.ts";
+import { AsyncValue } from "./async_value.ts";
 import { RwLock } from "./rw_lock.ts";
 
 Deno.test("RwLock", async (t) => {
