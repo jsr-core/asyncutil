@@ -1,5 +1,5 @@
-import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { delay } from "https://deno.land/std@0.211.0/async/delay.ts";
+import { assertEquals } from "@std/assert";
+import { delay } from "@std/async/delay";
 import { WaitGroup } from "./wait_group.ts";
 
 Deno.test("WaitGroup", async (t) => {

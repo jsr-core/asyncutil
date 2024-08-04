@@ -6,9 +6,9 @@ export interface WaitOptions {
  * Async notifier that allows one or more "waiters" to wait for a notification.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
- * import { promiseState } from "https://deno.land/x/async@$MODULE_VERSION/state.ts";
- * import { Notify } from "https://deno.land/x/async@$MODULE_VERSION/notify.ts";
+ * import { assertEquals } from "@std/assert";
+ * import { promiseState } from "@core/asyncutil/promise-state";
+ * import { Notify } from "@core/asyncutil/notify";
  *
  * const notify = new Notify();
  * const waiter1 = notify.notified();

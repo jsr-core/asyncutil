@@ -6,8 +6,8 @@ import { Mutex } from "./mutex.ts";
  * Writers block all other readers and writers until the write operation completes.
  *
  * ```ts
- * import { AsyncValue } from "https://deno.land/x/async@$MODULE_VERSION/testutil.ts";
- * import { RwLock } from "https://deno.land/x/async@$MODULE_VERSION/rw_lock.ts";
+ * import { AsyncValue } from "@core/asyncutil/async-value";
+ * import { RwLock } from "@core/asyncutil/rw-lock";
  *
  * const count = new RwLock(new AsyncValue(0));
  *

@@ -6,8 +6,8 @@ import { Notify } from "./notify.ts";
  * a specific number of tasks must complete before the program can proceed.
  *
  * ```ts
- * import { delay } from "https://deno.land/std@0.211.0/async/delay.ts";
- * import { WaitGroup } from "https://deno.land/x/async@$MODULE_VERSION/wait_group.ts";
+ * import { delay } from "@std/async/delay";
+ * import { WaitGroup } from "@core/asyncutil/wait-group";
  *
  * const wg = new WaitGroup();
  *

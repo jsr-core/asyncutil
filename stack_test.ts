@@ -1,8 +1,5 @@
-import { delay } from "https://deno.land/std@0.211.0/async/delay.ts";
-import {
-  assertEquals,
-  assertRejects,
-} from "https://deno.land/std@0.211.0/assert/mod.ts";
+import { delay } from "@std/async/delay";
+import { assertEquals, assertRejects } from "@std/assert";
 import { promiseState } from "./promise_state.ts";
 import { Stack } from "./stack.ts";
 
