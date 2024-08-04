@@ -49,13 +49,13 @@ export class Queue<T> {
    * @returns A promise that resolves to the next item in the queue.
    */
   async pop({ signal }: { signal?: AbortSignal } = {}): Promise<T> {
-    while (!signal?.aborted) {
+    while (true) {
+      signal?.throwIfAborted();
       const value = this.#items.shift();
       if (value) {
         return value;
       }
       await this.#notify.notified({ signal });
     }
-    throw new DOMException("Aborted", "AbortError");
   }
 }

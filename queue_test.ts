@@ -33,12 +33,13 @@ Deno.test("Queue", async (t) => {
   await t.step("'pop' with signal aborted after delay", async () => {
     const controller = new AbortController();
     const q = new Queue<number>();
+    const reason = new Error("Aborted");
 
-    delay(100).then(() => controller.abort());
+    delay(100).then(() => controller.abort(reason));
 
     await assertRejects(
       () => q.pop({ signal: controller.signal }),
-      DOMException,
+      Error,
       "Aborted",
     );
   });
@@ -46,12 +47,13 @@ Deno.test("Queue", async (t) => {
   await t.step("'pop' with signal already aborted", async () => {
     const controller = new AbortController();
     const q = new Queue<number>();
+    const reason = new Error("Aborted");
 
-    controller.abort();
+    controller.abort(reason);
 
     await assertRejects(
       () => q.pop({ signal: controller.signal }),
-      DOMException,
+      Error,
       "Aborted",
     );
   });

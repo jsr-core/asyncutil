@@ -53,13 +53,13 @@ export class Stack<T> {
    * @returns A promise that resolves to the next item in the stack.
    */
   async pop({ signal }: { signal?: AbortSignal } = {}): Promise<T> {
-    while (!signal?.aborted) {
+    while (true) {
+      signal?.throwIfAborted();
       const value = this.#items.pop();
       if (value) {
         return value;
       }
       await this.#notify.notified({ signal });
     }
-    throw new DOMException("Aborted", "AbortError");
   }
 }

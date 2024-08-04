@@ -8,9 +8,11 @@ Deno.test("Notify", async (t) => {
     const notify = new Notify();
     const waiter1 = notify.notified();
     const waiter2 = notify.notified();
+
     notify.notify();
     assertEquals(await promiseState(waiter1), "fulfilled");
     assertEquals(await promiseState(waiter2), "pending");
+
     notify.notify();
     assertEquals(await promiseState(waiter1), "fulfilled");
     assertEquals(await promiseState(waiter2), "fulfilled");
@@ -24,21 +26,6 @@ Deno.test("Notify", async (t) => {
     assertEquals(await promiseState(waiter1), "fulfilled");
     assertEquals(await promiseState(waiter2), "fulfilled");
   });
-
-  await t.step(
-    "'notified' with already aborted signal throws DOMException",
-    async () => {
-      const controller = new AbortController();
-      const notify = new Notify();
-
-      controller.abort();
-      await assertRejects(
-        () => notify.notified({ signal: controller.signal }),
-        DOMException,
-        "Aborted",
-      );
-    },
-  );
 
   await t.step(
     "'notified' with non-aborted signal",
@@ -56,11 +43,12 @@ Deno.test("Notify", async (t) => {
     async () => {
       const controller = new AbortController();
       const notify = new Notify();
+      const reason = new Error("Aborted");
 
-      delay(100).then(() => controller.abort());
+      delay(100).then(() => controller.abort(reason));
       await assertRejects(
         () => notify.notified({ signal: controller.signal }),
-        DOMException,
+        Error,
         "Aborted",
       );
     },
@@ -71,11 +59,12 @@ Deno.test("Notify", async (t) => {
     async () => {
       const controller = new AbortController();
       const notify = new Notify();
+      const reason = new Error("Aborted");
 
-      controller.abort();
+      controller.abort(reason);
       await assertRejects(
         () => notify.notified({ signal: controller.signal }),
-        DOMException,
+        Error,
         "Aborted",
       );
     },

@@ -63,12 +63,12 @@ export class Notify {
    */
   async notified({ signal }: { signal?: AbortSignal } = {}): Promise<void> {
     if (signal?.aborted) {
-      throw new DOMException("Aborted", "AbortError");
+      throw signal.reason;
     }
     const waiter = Promise.withResolvers<void>();
     const abort = () => {
       removeItem(this.#waiters, waiter);
-      waiter.reject(new DOMException("Aborted", "AbortError"));
+      waiter.reject(signal!.reason);
     };
     signal?.addEventListener("abort", abort, { once: true });
     this.#waiters.push(waiter);
