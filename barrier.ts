@@ -46,15 +46,16 @@ export class Barrier {
    * Wait for all threads to reach the barrier.
    * Blocks until all threads reach the barrier.
    */
-  async wait(): Promise<void> {
+  async wait({ signal }: { signal?: AbortSignal } = {}): Promise<void> {
+    signal?.throwIfAborted();
     this.#rest -= 1;
     if (this.#rest === 0) {
       await Promise.all([
-        this.#notify.notified(),
+        this.#notify.notified({ signal }),
         this.#notify.notifyAll(),
       ]);
     } else {
-      await this.#notify.notified();
+      await this.#notify.notified({ signal });
     }
   }
 }

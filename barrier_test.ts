@@ -1,4 +1,5 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
+import { deadline, delay } from "@std/async";
 import { Barrier } from "./barrier.ts";
 
 Deno.test("Barrier", async (t) => {
@@ -28,6 +29,54 @@ Deno.test("Barrier", async (t) => {
         "after wait 3",
         "after wait 4",
       ]);
+    },
+  );
+
+  await t.step(
+    "'wait' with non-aborted signal",
+    async () => {
+      const controller = new AbortController();
+      const barrier = new Barrier(2);
+
+      await assertRejects(
+        () => deadline(barrier.wait({ signal: controller.signal }), 100),
+        DOMException,
+        "Signal timed out.",
+      );
+    },
+  );
+
+  await t.step(
+    "'wait' with signal aborted after delay",
+    async () => {
+      const controller = new AbortController();
+      const barrier = new Barrier(2);
+      const reason = new Error("Aborted");
+
+      delay(50).then(() => controller.abort(reason));
+
+      await assertRejects(
+        () => deadline(barrier.wait({ signal: controller.signal }), 100),
+        Error,
+        "Aborted",
+      );
+    },
+  );
+
+  await t.step(
+    "'wait' with already aborted signal",
+    async () => {
+      const controller = new AbortController();
+      const barrier = new Barrier(2);
+      const reason = new Error("Aborted");
+
+      controller.abort(reason);
+
+      await assertRejects(
+        () => deadline(barrier.wait({ signal: controller.signal }), 100),
+        Error,
+        "Aborted",
+      );
     },
   );
 });
