@@ -54,7 +54,7 @@ export class WaitGroup {
    *
    * @returns A Promise that resolves when the counter becomes zero.
    */
-  wait(): Promise<void> {
-    return this.#notify.notified();
+  wait({ signal }: { signal?: AbortSignal } = {}): Promise<void> {
+    return this.#notify.notified({ signal });
   }
 }
