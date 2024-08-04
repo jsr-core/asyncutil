@@ -1,5 +1,7 @@
 # asyncutil
 
+[![Test](https://github.com/jsr-core/asyncutil/actions/workflows/test.yml/badge.svg)](https://github.com/jsr-core/asyncutil/actions/workflows/test.yml)
+
 Asynchronous primitive utility pack.
 
 ## Usage
