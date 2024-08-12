@@ -26,13 +26,13 @@
  * ```
  */
 export class Mutex {
-  #waiters: Promise<void>[] = [];
+  #waiters: Set<Promise<void>> = new Set();
 
   /**
    * Returns true if the mutex is locked, false otherwise.
    */
   get locked(): boolean {
-    return this.#waiters.length > 0;
+    return this.#waiters.size > 0;
   }
 
   /**
@@ -43,10 +43,11 @@ export class Mutex {
   acquire(): Promise<Disposable> & Disposable {
     const waiters = [...this.#waiters];
     const { promise, resolve } = Promise.withResolvers<void>();
-    this.#waiters.push(promise);
+    this.#waiters.add(promise);
     const disposable = {
       [Symbol.dispose]: () => {
         resolve();
+        this.#waiters.delete(promise);
       },
     };
     return Object.assign(
