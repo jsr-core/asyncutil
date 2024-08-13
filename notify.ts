@@ -35,8 +35,14 @@ export class Notify {
   /**
    * Notifies `n` waiters that are waiting for notification. Resolves each of the notified waiters.
    * If there are fewer than `n` waiters, all waiters are notified.
+   *
+   * @param n The number of waiters to notify.
+   * @throws {RangeError} if `n` is not a positive safe integer.
    */
   notify(n = 1): void {
+    if (n <= 0 || !Number.isSafeInteger(n)) {
+      throw new RangeError(`n must be a positive safe integer, got ${n}`);
+    }
     const it = iter(this.#waiters);
     for (const waiter of take(it, n)) {
       waiter.resolve();

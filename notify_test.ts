@@ -1,5 +1,5 @@
 import { delay } from "@std/async/delay";
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { promiseState } from "./promise_state.ts";
 import { Notify } from "./notify.ts";
 
@@ -107,6 +107,19 @@ Deno.test("Notify", async (t) => {
         Error,
         "Aborted",
       );
+    },
+  );
+
+  await t.step(
+    "'notify' throws RangeError if size is not a positive safe integer",
+    () => {
+      const notify = new Notify();
+      assertThrows(() => notify.notify(NaN), RangeError);
+      assertThrows(() => notify.notify(Infinity), RangeError);
+      assertThrows(() => notify.notify(-Infinity), RangeError);
+      assertThrows(() => notify.notify(-1), RangeError);
+      assertThrows(() => notify.notify(1.1), RangeError);
+      assertThrows(() => notify.notify(0), RangeError);
     },
   );
 });
