@@ -33,11 +33,13 @@ export class Barrier {
    * Creates a new `Barrier` that blocks until `size` threads have called `wait`.
    *
    * @param size The number of threads that must reach the barrier before it unblocks.
-   * @throws Error if the size is negative.
+   * @throws {RangeError} if the size is not a positive safe integer.
    */
   constructor(size: number) {
-    if (size < 0) {
-      throw new Error("The size must be greater than 0");
+    if (size <= 0 || !Number.isSafeInteger(size)) {
+      throw new RangeError(
+        `size must be a positive safe integer, got ${size}`,
+      );
     }
     this.#rest = size;
   }

@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { deadline, delay } from "@std/async";
 import { Barrier } from "./barrier.ts";
 
@@ -77,6 +77,18 @@ Deno.test("Barrier", async (t) => {
         Error,
         "Aborted",
       );
+    },
+  );
+
+  await t.step(
+    "throws RangeError if size is not a positive safe integer",
+    () => {
+      assertThrows(() => new Barrier(NaN), RangeError);
+      assertThrows(() => new Barrier(Infinity), RangeError);
+      assertThrows(() => new Barrier(-Infinity), RangeError);
+      assertThrows(() => new Barrier(-1), RangeError);
+      assertThrows(() => new Barrier(1.1), RangeError);
+      assertThrows(() => new Barrier(0), RangeError);
     },
   );
 });
