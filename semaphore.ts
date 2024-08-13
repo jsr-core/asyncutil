@@ -23,11 +23,13 @@ export class Semaphore {
    * Creates a new semaphore with the specified limit.
    *
    * @param size The maximum number of times the semaphore can be acquired before blocking.
-   * @throws Error if the size is less than 1.
+   * @throws {RangeError} if the size is not a positive safe integer.
    */
   constructor(size: number) {
-    if (size < 0) {
-      throw new Error("The size must be greater than 0");
+    if (size <= 0 || !Number.isSafeInteger(size)) {
+      throw new RangeError(
+        `size must be a positive safe integer, got ${size}`,
+      );
     }
     this.#rest = size + 1;
   }
