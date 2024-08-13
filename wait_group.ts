@@ -36,6 +36,9 @@ export class WaitGroup {
    * @param delta The number to add to the counter. It can be positive or negative.
    */
   add(delta: number): void {
+    if (!Number.isSafeInteger(delta)) {
+      throw new RangeError(`delta must be a safe integer, got ${delta}`);
+    }
     this.#count += delta;
     if (this.#count === 0) {
       this.#notify.notifyAll();

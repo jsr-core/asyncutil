@@ -1,3 +1,6 @@
+import { iter } from "@core/iterutil/iter";
+import { take } from "@core/iterutil/take";
+
 /**
  * Async notifier that allows one or more "waiters" to wait for a notification.
  *
@@ -20,30 +23,31 @@
  * ```
  */
 export class Notify {
-  #waiters: {
-    promise: Promise<void>;
-    resolve: () => void;
-    reject: (reason?: unknown) => void;
-  }[] = [];
+  #waiters: Set<PromiseWithResolvers<void>> = new Set();
 
   /**
    * Returns the number of waiters that are waiting for notification.
    */
   get waiterCount(): number {
-    return this.#waiters.length;
+    return this.#waiters.size;
   }
 
   /**
    * Notifies `n` waiters that are waiting for notification. Resolves each of the notified waiters.
    * If there are fewer than `n` waiters, all waiters are notified.
+   *
+   * @param n The number of waiters to notify.
+   * @throws {RangeError} if `n` is not a positive safe integer.
    */
   notify(n = 1): void {
-    const head = this.#waiters.slice(0, n);
-    const tail = this.#waiters.slice(n);
-    for (const waiter of head) {
+    if (n <= 0 || !Number.isSafeInteger(n)) {
+      throw new RangeError(`n must be a positive safe integer, got ${n}`);
+    }
+    const it = iter(this.#waiters);
+    for (const waiter of take(it, n)) {
       waiter.resolve();
     }
-    this.#waiters = tail;
+    this.#waiters = new Set(it);
   }
 
   /**
@@ -53,7 +57,7 @@ export class Notify {
     for (const waiter of this.#waiters) {
       waiter.resolve();
     }
-    this.#waiters = [];
+    this.#waiters = new Set();
   }
 
   /**
@@ -67,17 +71,12 @@ export class Notify {
     }
     const waiter = Promise.withResolvers<void>();
     const abort = () => {
-      removeItem(this.#waiters, waiter);
+      this.#waiters.delete(waiter);
       waiter.reject(signal!.reason);
     };
     signal?.addEventListener("abort", abort, { once: true });
-    this.#waiters.push(waiter);
+    this.#waiters.add(waiter);
     await waiter.promise;
     signal?.removeEventListener("abort", abort);
   }
-}
-
-function removeItem<T>(array: T[], item: T): void {
-  const index = array.indexOf(item);
-  array.splice(index, 1);
 }

@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { deadline, delay } from "@std/async";
 import { WaitGroup } from "./wait_group.ts";
 
@@ -81,6 +81,17 @@ Deno.test("WaitGroup", async (t) => {
         Error,
         "Aborted",
       );
+    },
+  );
+
+  await t.step(
+    "'add' throws RangeError if delta is not a safe integer",
+    () => {
+      const wg = new WaitGroup();
+      assertThrows(() => wg.add(NaN), RangeError);
+      assertThrows(() => wg.add(Infinity), RangeError);
+      assertThrows(() => wg.add(-Infinity), RangeError);
+      assertThrows(() => wg.add(1.1), RangeError);
     },
   );
 });
