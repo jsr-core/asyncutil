@@ -1,3 +1,6 @@
+import { iter } from "@core/iterutil/iter";
+import { take } from "@core/iterutil/take";
+
 /**
  * Async notifier that allows one or more "waiters" to wait for a notification.
  *
@@ -20,17 +23,13 @@
  * ```
  */
 export class Notify {
-  #waiters: {
-    promise: Promise<void>;
-    resolve: () => void;
-    reject: (reason?: unknown) => void;
-  }[] = [];
+  #waiters: Set<PromiseWithResolvers<void>> = new Set();
 
   /**
    * Returns the number of waiters that are waiting for notification.
    */
   get waiterCount(): number {
-    return this.#waiters.length;
+    return this.#waiters.size;
   }
 
   /**
@@ -38,12 +37,11 @@ export class Notify {
    * If there are fewer than `n` waiters, all waiters are notified.
    */
   notify(n = 1): void {
-    const head = this.#waiters.slice(0, n);
-    const tail = this.#waiters.slice(n);
-    for (const waiter of head) {
+    const it = iter(this.#waiters);
+    for (const waiter of take(it, n)) {
       waiter.resolve();
     }
-    this.#waiters = tail;
+    this.#waiters = new Set(it);
   }
 
   /**
@@ -53,7 +51,7 @@ export class Notify {
     for (const waiter of this.#waiters) {
       waiter.resolve();
     }
-    this.#waiters = [];
+    this.#waiters = new Set();
   }
 
   /**
@@ -67,17 +65,12 @@ export class Notify {
     }
     const waiter = Promise.withResolvers<void>();
     const abort = () => {
-      removeItem(this.#waiters, waiter);
+      this.#waiters.delete(waiter);
       waiter.reject(signal!.reason);
     };
     signal?.addEventListener("abort", abort, { once: true });
-    this.#waiters.push(waiter);
+    this.#waiters.add(waiter);
     await waiter.promise;
     signal?.removeEventListener("abort", abort);
   }
-}
-
-function removeItem<T>(array: T[], item: T): void {
-  const index = array.indexOf(item);
-  array.splice(index, 1);
 }
