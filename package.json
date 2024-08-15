@@ -1,0 +1,9 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@core/iterutil": "npm:@jsr/core__iterutil@^0.6.0-pre.0",
+    "@cross/test": "npm:@jsr/cross__test",
+    "@std/assert": "npm:@jsr/std__assert",
+    "@std/async": "npm:@jsr/std__async@^1.0.3"
+  }
+}

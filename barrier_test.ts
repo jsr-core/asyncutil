@@ -1,7 +1,8 @@
 import { test } from "@cross/test";
 import { assertEquals, assertRejects, assertThrows } from "@std/assert";
-import { deadline, delay } from "@std/async";
+import { delay } from "@std/async";
 import { Barrier } from "./barrier.ts";
+import { deadline } from "./_testutil.ts";
 
 test(
   "Barrier 'wait' waits until the number of waiters reached the size specified to the barrier",

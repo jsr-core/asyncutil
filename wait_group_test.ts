@@ -1,7 +1,8 @@
 import { test } from "@cross/test";
 import { assertEquals, assertRejects, assertThrows } from "@std/assert";
-import { deadline, delay } from "@std/async";
+import { delay } from "@std/async";
 import { WaitGroup } from "./wait_group.ts";
+import { deadline } from "./_testutil.ts";
 
 test(
   "WaitGroup Ensure WaitGroup synchronizes multiple workers",
