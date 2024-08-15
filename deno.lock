@@ -2,12 +2,19 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "jsr:@core/asyncutil@1.0.2": "jsr:@core/asyncutil@1.0.2",
       "jsr:@core/iterutil@^0.6.0": "jsr:@core/iterutil@0.6.0",
       "jsr:@std/assert@^1.0.2": "jsr:@std/assert@1.0.2",
       "jsr:@std/async@^1.0.2": "jsr:@std/async@1.0.2",
       "jsr:@std/internal@^1.0.1": "jsr:@std/internal@1.0.1"
     },
     "jsr": {
+      "@core/asyncutil@1.0.2": {
+        "integrity": "efb2c41ccf6d9ba481f1fedb87734813530ef64ca2193a89f595cd1483b71476",
+        "dependencies": [
+          "jsr:@core/iterutil@^0.6.0"
+        ]
+      },
       "@core/iterutil@0.6.0": {
         "integrity": "8de0d0062a515496ae744983941d7e379668c2ee2edf43f63423e8da753828b1"
       },

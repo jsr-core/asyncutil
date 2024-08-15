@@ -1,7 +1,17 @@
-import { Notify } from "./notify.ts";
-
 /**
  * A semaphore that allows a limited number of concurrent executions of an operation.
+ *
+ * ```ts
+ * import { Semaphore } from "@core/asyncutil/semaphore";
+ *
+ * const sem = new Semaphore(5);
+ *
+ * const worker = async () => {
+ *   using _lock = await sem.acquire();
+ *   // do something
+ * };
+ * await Promise.all([...Array(10)].map(() => worker()));
+ * ```
  *
  * ```ts
  * import { Semaphore } from "@core/asyncutil/semaphore";
@@ -16,8 +26,8 @@ import { Notify } from "./notify.ts";
  * ```
  */
 export class Semaphore {
-  #notify = new Notify();
-  #rest: number;
+  #waiters = new Set<PromiseWithResolvers<void>>();
+  #value: number;
 
   /**
    * Creates a new semaphore with the specified limit.
@@ -31,46 +41,53 @@ export class Semaphore {
         `size must be a positive safe integer, got ${size}`,
       );
     }
-    this.#rest = size + 1;
+    this.#value = size;
   }
 
   /**
    * Returns true if the semaphore is currently locked.
    */
   get locked(): boolean {
-    return this.#rest === 0;
+    return this.#value === 0;
   }
 
   /**
-   * Acquires a lock on the semaphore, and invokes the specified function.
+   * Acquires a lock and invokes the specified function.
    *
    * @param fn The function to invoke.
    * @returns A promise that resolves to the return value of the specified function.
    */
   async lock<R>(fn: () => R | PromiseLike<R>): Promise<R> {
-    await this.#acquire();
-    try {
-      return await fn();
-    } finally {
-      this.#release();
-    }
+    using _lock = await this.acquire();
+    return await fn();
   }
 
-  async #acquire(): Promise<void> {
-    if (this.#rest > 0) {
-      this.#rest -= 1;
+  /**
+   * Acquire a lock and return a promise with disposable that releases the a lock when disposed.
+   *
+   * @returns A Promise with Disposable that releases the mutex when disposed.
+   */
+  acquire(): Promise<Disposable> & Disposable {
+    const disposable = {
+      [Symbol.dispose]: () => this.#release(),
+    };
+    if (this.#value > 0) {
+      this.#value -= 1;
+      return Object.assign(Promise.resolve(disposable), disposable);
     }
-    if (this.#rest === 0) {
-      await this.#notify.notified();
-    }
+    const waiter = Promise.withResolvers<void>();
+    this.#waiters.add(waiter);
+    return Object.assign(waiter.promise.then(() => disposable), disposable);
   }
 
   #release(): void {
-    if (this.#notify.waiterCount > 0) {
-      this.#notify.notify();
-    }
-    if (this.#notify.waiterCount === 0) {
-      this.#rest += 1;
+    if (this.#waiters.size > 0) {
+      const waiters = this.#waiters;
+      const [waiter] = waiters.keys();
+      waiters.delete(waiter);
+      waiter.resolve();
+    } else {
+      this.#value += 1;
     }
   }
 }
