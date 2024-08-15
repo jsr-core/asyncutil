@@ -32,7 +32,9 @@
       }
     }
   },
-  "remote": {},
+  "remote": {
+    "https://gist.githubusercontent.com/PandaWorker/ec07a22b55668073e70237285da18cee/raw/612f7cf8f8df80a114780ddf07ca9acdebe97b9f/MyMutex.ts": "b129ed3098da1eb67c13027a7baa6a5386d8e2caea2cfd5bb4ab6a4debcb908f"
+  },
   "workspace": {
     "dependencies": [
       "jsr:@core/iterutil@^0.6.0",

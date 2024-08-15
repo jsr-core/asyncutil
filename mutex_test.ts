@@ -17,7 +17,7 @@ Deno.test("Mutex", async (t) => {
   );
 
   await t.step(
-    "Processing over multiple event loops is not atomic, but can be changed to atomic by using Mutex",
+    "Processing over multiple event loops is not atomic, but can be changed to atomic by using Mutex (using)",
     async () => {
       const mu = new Mutex();
       const count = new AsyncValue(0);
@@ -25,6 +25,22 @@ Deno.test("Mutex", async (t) => {
         using _lock = await mu.acquire();
         const v = await count.get();
         await count.set(v + 1);
+      };
+      await Promise.all([...Array(10)].map(() => operation()));
+      assertEquals(await count.get(), 10);
+    },
+  );
+
+  await t.step(
+    "Processing over multiple event loops is not atomic, but can be changed to atomic by using Mutex (lock)",
+    async () => {
+      const mu = new Mutex();
+      const count = new AsyncValue(0);
+      const operation = async () => {
+        await mu.lock(async () => {
+          const v = await count.get();
+          await count.set(v + 1);
+        });
       };
       await Promise.all([...Array(10)].map(() => operation()));
       assertEquals(await count.get(), 10);
