@@ -203,10 +203,9 @@ operation.
 import { Semaphore } from "@core/asyncutil/semaphore";
 
 const sem = new Semaphore(5);
-const worker = () => {
-  return sem.lock(async () => {
-    // do something
-  });
+const worker = async () => {
+  using _lock = await sem.acquire();
+  // do something
 };
 await Promise.all([...Array(10)].map(() => worker()));
 ```
