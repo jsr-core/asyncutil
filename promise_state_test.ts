@@ -1,7 +1,8 @@
+import { test } from "@cross/test";
 import { assertEquals } from "@std/assert";
 import { promiseState } from "./promise_state.ts";
 
-Deno.test(
+test(
   "promiseState() returns 'fulfilled' for resolved promise",
   async () => {
     const p = Promise.resolve("Resolved promise");
@@ -9,7 +10,7 @@ Deno.test(
   },
 );
 
-Deno.test(
+test(
   "promiseState() returns 'rejected' for rejected promise",
   async () => {
     const p = Promise.reject("Rejected promise");
@@ -18,7 +19,7 @@ Deno.test(
   },
 );
 
-Deno.test(
+test(
   "promiseState() returns 'pending' for not resolved promise",
   async () => {
     const p = new Promise(() => undefined);
@@ -26,7 +27,7 @@ Deno.test(
   },
 );
 
-Deno.test("promiseState() returns refreshed status", async () => {
+test("promiseState() returns refreshed status", async () => {
   const { promise, resolve } = Promise.withResolvers<void>();
   const p = (async () => {
     await promise;
