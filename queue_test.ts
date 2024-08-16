@@ -57,3 +57,21 @@ test("Queue 'pop' with signal already aborted", async () => {
     "Aborted",
   );
 });
+
+test("Queue with falsy value is accepted", async () => {
+  const q = new Queue<number>();
+  const popper = q.pop();
+  assertEquals(await promiseState(popper), "pending");
+  q.push(0);
+  assertEquals(await promiseState(popper), "fulfilled");
+  assertEquals(await popper, 0);
+});
+
+test("Queue with null is accepted", async () => {
+  const q = new Queue<null>();
+  const popper = q.pop();
+  assertEquals(await promiseState(popper), "pending");
+  q.push(null);
+  assertEquals(await promiseState(popper), "fulfilled");
+  assertEquals(await popper, null);
+});

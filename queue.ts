@@ -17,7 +17,7 @@ import { Notify } from "./notify.ts";
  * assertEquals(await queue.pop(), 3);
  * ```
  */
-export class Queue<T> {
+export class Queue<T extends NonNullable<unknown> | null> {
   #notify = new Notify();
   #items: T[] = [];
 
@@ -52,7 +52,7 @@ export class Queue<T> {
     while (true) {
       signal?.throwIfAborted();
       const value = this.#items.shift();
-      if (value) {
+      if (value !== undefined) {
         return value;
       }
       await this.#notify.notified({ signal });
