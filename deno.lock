@@ -6,7 +6,7 @@
       "jsr:@cross/runtime@^1.0.0": "jsr:@cross/runtime@1.0.0",
       "jsr:@cross/test@^0.0.9": "jsr:@cross/test@0.0.9",
       "jsr:@std/assert@^1.0.2": "jsr:@std/assert@1.0.2",
-      "jsr:@std/async@^1.0.2": "jsr:@std/async@1.0.2",
+      "jsr:@std/async@^1.0.2": "jsr:@std/async@1.0.3",
       "jsr:@std/internal@^1.0.1": "jsr:@std/internal@1.0.1",
       "npm:@types/node": "npm:@types/node@18.16.19"
     },
@@ -29,8 +29,8 @@
           "jsr:@std/internal@^1.0.1"
         ]
       },
-      "@std/async@1.0.2": {
-        "integrity": "36e7f0f922c843b45df546857d269f01ed4d0406aced2a6639eac325b2435e43"
+      "@std/async@1.0.3": {
+        "integrity": "6ed64678db43451683c6c176a21426a2ccd21ba0269ebb2c36133ede3f165792"
       },
       "@std/internal@1.0.1": {
         "integrity": "6f8c7544d06a11dd256c8d6ba54b11ed870aac6c5aeafff499892662c57673e6"

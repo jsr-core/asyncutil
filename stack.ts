@@ -19,7 +19,7 @@ import { Notify } from "./notify.ts";
  *
  * @template T The type of items in the stack.
  */
-export class Stack<T> {
+export class Stack<T extends NonNullable<unknown> | null> {
   #notify = new Notify();
   #items: T[] = [];
 
@@ -56,7 +56,7 @@ export class Stack<T> {
     while (true) {
       signal?.throwIfAborted();
       const value = this.#items.pop();
-      if (value) {
+      if (value !== undefined) {
         return value;
       }
       await this.#notify.notified({ signal });

@@ -57,3 +57,21 @@ test("Stack 'pop' with signal already aborted", async () => {
     "Aborted",
   );
 });
+
+test("Stack with falsy value is accepted", async () => {
+  const q = new Stack<number>();
+  const popper = q.pop();
+  assertEquals(await promiseState(popper), "pending");
+  q.push(0);
+  assertEquals(await promiseState(popper), "fulfilled");
+  assertEquals(await popper, 0);
+});
+
+test("Stack with null is accepted", async () => {
+  const q = new Stack<null>();
+  const popper = q.pop();
+  assertEquals(await promiseState(popper), "pending");
+  q.push(null);
+  assertEquals(await promiseState(popper), "fulfilled");
+  assertEquals(await popper, null);
+});
