@@ -1,5 +1,3 @@
-import { Notify } from "./notify.ts";
-
 /**
  * A synchronization primitive that allows multiple tasks to wait until all of
  * them have reached a certain point of execution before continuing.
@@ -26,8 +24,8 @@ import { Notify } from "./notify.ts";
  * ```
  */
 export class Barrier {
-  #notify = new Notify();
-  #rest: number;
+  #waiter: PromiseWithResolvers<void> = Promise.withResolvers();
+  #value: number;
 
   /**
    * Creates a new `Barrier` that blocks until `size` threads have called `wait`.
@@ -41,23 +39,24 @@ export class Barrier {
         `size must be a positive safe integer, got ${size}`,
       );
     }
-    this.#rest = size;
+    this.#value = size;
   }
 
   /**
    * Wait for all threads to reach the barrier.
    * Blocks until all threads reach the barrier.
    */
-  async wait({ signal }: { signal?: AbortSignal } = {}): Promise<void> {
-    signal?.throwIfAborted();
-    this.#rest -= 1;
-    if (this.#rest === 0) {
-      await Promise.all([
-        this.#notify.notified({ signal }),
-        this.#notify.notifyAll(),
-      ]);
-    } else {
-      await this.#notify.notified({ signal });
+  wait({ signal }: { signal?: AbortSignal } = {}): Promise<void> {
+    if (signal?.aborted) {
+      return Promise.reject(signal.reason);
     }
+    const { promise, resolve, reject } = this.#waiter;
+    const abort = () => reject(signal!.reason);
+    signal?.addEventListener("abort", abort, { once: true });
+    this.#value -= 1;
+    if (this.#value === 0) {
+      resolve();
+    }
+    return promise.finally(() => signal?.removeEventListener("abort", abort));
   }
 }
