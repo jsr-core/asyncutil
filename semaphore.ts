@@ -1,5 +1,3 @@
-import { Notify } from "./notify.ts";
-
 /**
  * A semaphore that allows a limited number of concurrent executions of an operation.
  *
@@ -16,8 +14,9 @@ import { Notify } from "./notify.ts";
  * ```
  */
 export class Semaphore {
-  #notify = new Notify();
-  #rest: number;
+  #resolves: (() => void)[] = [];
+  #value: number;
+  #size: number;
 
   /**
    * Creates a new semaphore with the specified limit.
@@ -31,14 +30,15 @@ export class Semaphore {
         `size must be a positive safe integer, got ${size}`,
       );
     }
-    this.#rest = size + 1;
+    this.#value = size;
+    this.#size = size;
   }
 
   /**
    * Returns true if the semaphore is currently locked.
    */
   get locked(): boolean {
-    return this.#rest === 0;
+    return this.#value === 0;
   }
 
   /**
@@ -56,21 +56,23 @@ export class Semaphore {
     }
   }
 
-  async #acquire(): Promise<void> {
-    if (this.#rest > 0) {
-      this.#rest -= 1;
-    }
-    if (this.#rest === 0) {
-      await this.#notify.notified();
+  #acquire(): Promise<void> {
+    if (this.#value > 0) {
+      this.#value -= 1;
+      return Promise.resolve();
+    } else {
+      const { promise, resolve } = Promise.withResolvers<void>();
+      this.#resolves.push(resolve);
+      return promise;
     }
   }
 
   #release(): void {
-    if (this.#notify.waiterCount > 0) {
-      this.#notify.notify();
-    }
-    if (this.#notify.waiterCount === 0) {
-      this.#rest += 1;
+    const resolve = this.#resolves.shift();
+    if (resolve) {
+      resolve();
+    } else if (this.#value < this.#size) {
+      this.#value += 1;
     }
   }
 }
