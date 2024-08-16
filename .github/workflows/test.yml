@@ -60,6 +60,22 @@ jobs:
           npx --yes tsx --test *_test.ts
         timeout-minutes: 5
 
+  test-bun:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: antongolub/action-setup-bun@v1
+        with:
+          bun-version: v1.x # Uses latest bun 1
+      - name: Install deps
+        run: |
+          bun install
+      - name: Test
+        run: |
+          # https://github.com/cross-org/test/issues/1
+          ls -v1 *_test.ts | xargs -n1 bun test '{}'
+        timeout-minutes: 5
+
   jsr-publish:
     runs-on: ubuntu-latest
     steps:
