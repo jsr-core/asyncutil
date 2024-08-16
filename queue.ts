@@ -1,5 +1,3 @@
-import { Notify } from "./notify.ts";
-
 /**
  * A queue implementation that allows for adding and removing elements, with optional waiting when
  * popping elements from an empty queue.
@@ -18,7 +16,7 @@ import { Notify } from "./notify.ts";
  * ```
  */
 export class Queue<T extends NonNullable<unknown> | null> {
-  #notify = new Notify();
+  #resolves: (() => void)[] = [];
   #items: T[] = [];
 
   /**
@@ -32,7 +30,7 @@ export class Queue<T extends NonNullable<unknown> | null> {
    * Returns true if the queue is currently locked.
    */
   get locked(): boolean {
-    return this.#notify.waiterCount > 0;
+    return this.#resolves.length > 0;
   }
 
   /**
@@ -40,7 +38,7 @@ export class Queue<T extends NonNullable<unknown> | null> {
    */
   push(value: T): void {
     this.#items.push(value);
-    this.#notify.notify();
+    this.#resolves.shift()?.();
   }
 
   /**
@@ -55,7 +53,12 @@ export class Queue<T extends NonNullable<unknown> | null> {
       if (value !== undefined) {
         return value;
       }
-      await this.#notify.notified({ signal });
+      const { promise, resolve, reject } = Promise.withResolvers<void>();
+      signal?.addEventListener("abort", () => reject(signal.reason), {
+        once: true,
+      });
+      this.#resolves.push(resolve);
+      await promise;
     }
   }
 }
