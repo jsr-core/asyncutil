@@ -1,4 +1,4 @@
-import { Mutex } from "./mutex.ts";
+import { RawSemaphore } from "./_raw_semaphore.ts";
 
 /**
  * A reader-writer lock implementation that allows multiple concurrent reads but only one write at a time.
@@ -29,8 +29,8 @@ import { Mutex } from "./mutex.ts";
  * ```
  */
 export class RwLock<T> {
-  #read = new Mutex();
-  #write = new Mutex();
+  #read = new RawSemaphore(1);
+  #write = new RawSemaphore(1);
   #value: T;
 
   /**
@@ -50,16 +50,16 @@ export class RwLock<T> {
    * @returns A promise that resolves to the return value of the specified function.
    */
   async lock<R>(fn: (value: T) => R | PromiseLike<R>): Promise<R> {
-    const wlock = await this.#write.acquire();
+    await this.#write.acquire();
     try {
-      const rlock = await this.#read.acquire();
+      await this.#read.acquire();
       try {
         return await fn(this.#value);
       } finally {
-        rlock[Symbol.dispose]();
+        this.#read.release();
       }
     } finally {
-      wlock[Symbol.dispose]();
+      this.#write.release();
     }
   }
 
@@ -71,19 +71,19 @@ export class RwLock<T> {
    * @returns A promise that resolves to the return value of the specified function.
    */
   async rlock<R>(fn: (value: T) => R | PromiseLike<R>): Promise<R> {
-    const wlock = this.#write.locked
-      ? await this.#write.acquire()
-      : { [Symbol.dispose]: () => {} };
+    if (this.#write.locked) {
+      await this.#write.acquire();
+    }
     try {
       // Acquire the read lock without waiting to allow multiple readers to access the lock.
-      const rlock = this.#read.acquire();
+      this.#read.acquire();
       try {
         return await fn(this.#value);
       } finally {
-        rlock[Symbol.dispose]();
+        this.#read.release();
       }
     } finally {
-      wlock[Symbol.dispose]();
+      this.#write.release();
     }
   }
 }
