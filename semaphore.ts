@@ -1,4 +1,4 @@
-import { Notify } from "./notify.ts";
+import { RawSemaphore } from "./_raw_semaphore.ts";
 
 /**
  * A semaphore that allows a limited number of concurrent executions of an operation.
@@ -16,8 +16,7 @@ import { Notify } from "./notify.ts";
  * ```
  */
 export class Semaphore {
-  #notify = new Notify();
-  #rest: number;
+  #sem: RawSemaphore;
 
   /**
    * Creates a new semaphore with the specified limit.
@@ -26,19 +25,14 @@ export class Semaphore {
    * @throws {RangeError} if the size is not a positive safe integer.
    */
   constructor(size: number) {
-    if (size <= 0 || !Number.isSafeInteger(size)) {
-      throw new RangeError(
-        `size must be a positive safe integer, got ${size}`,
-      );
-    }
-    this.#rest = size + 1;
+    this.#sem = new RawSemaphore(size);
   }
 
   /**
    * Returns true if the semaphore is currently locked.
    */
   get locked(): boolean {
-    return this.#rest === 0;
+    return this.#sem.locked;
   }
 
   /**
@@ -48,29 +42,11 @@ export class Semaphore {
    * @returns A promise that resolves to the return value of the specified function.
    */
   async lock<R>(fn: () => R | PromiseLike<R>): Promise<R> {
-    await this.#acquire();
+    await this.#sem.acquire();
     try {
       return await fn();
     } finally {
-      this.#release();
-    }
-  }
-
-  async #acquire(): Promise<void> {
-    if (this.#rest > 0) {
-      this.#rest -= 1;
-    }
-    if (this.#rest === 0) {
-      await this.#notify.notified();
-    }
-  }
-
-  #release(): void {
-    if (this.#notify.waiterCount > 0) {
-      this.#notify.notify();
-    }
-    if (this.#notify.waiterCount === 0) {
-      this.#rest += 1;
+      this.#sem.release();
     }
   }
 }

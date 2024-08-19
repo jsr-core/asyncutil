@@ -1,5 +1,3 @@
-import { Notify } from "./notify.ts";
-
 /**
  * A stack implementation that allows for adding and removing elements, with optional waiting when
  * popping elements from an empty stack.
@@ -20,7 +18,7 @@ import { Notify } from "./notify.ts";
  * @template T The type of items in the stack.
  */
 export class Stack<T extends NonNullable<unknown> | null> {
-  #notify = new Notify();
+  #resolves: (() => void)[] = [];
   #items: T[] = [];
 
   /**
@@ -34,7 +32,7 @@ export class Stack<T extends NonNullable<unknown> | null> {
    * Returns true if the stack is currently locked.
    */
   get locked(): boolean {
-    return this.#notify.waiterCount > 0;
+    return this.#resolves.length > 0;
   }
 
   /**
@@ -44,7 +42,7 @@ export class Stack<T extends NonNullable<unknown> | null> {
    */
   push(value: T): void {
     this.#items.push(value);
-    this.#notify.notify();
+    this.#resolves.shift()?.();
   }
 
   /**
@@ -59,7 +57,12 @@ export class Stack<T extends NonNullable<unknown> | null> {
       if (value !== undefined) {
         return value;
       }
-      await this.#notify.notified({ signal });
+      const { promise, resolve, reject } = Promise.withResolvers<void>();
+      signal?.addEventListener("abort", () => reject(signal.reason), {
+        once: true,
+      });
+      this.#resolves.push(resolve);
+      await promise;
     }
   }
 }

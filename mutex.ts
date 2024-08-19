@@ -1,3 +1,5 @@
+import { RawSemaphore } from "./_raw_semaphore.ts";
+
 /**
  * A mutex (mutual exclusion) is a synchronization primitive that grants
  * exclusive access to a shared resource.
@@ -26,13 +28,13 @@
  * ```
  */
 export class Mutex {
-  #waiters: Set<Promise<void>> = new Set();
+  #sem: RawSemaphore = new RawSemaphore(1);
 
   /**
    * Returns true if the mutex is locked, false otherwise.
    */
   get locked(): boolean {
-    return this.#waiters.size > 0;
+    return this.#sem.locked;
   }
 
   /**
@@ -40,19 +42,11 @@ export class Mutex {
    *
    * @returns A Promise with Disposable that releases the mutex when disposed.
    */
-  acquire(): Promise<Disposable> & Disposable {
-    const waiters = [...this.#waiters];
-    const { promise, resolve } = Promise.withResolvers<void>();
-    this.#waiters.add(promise);
-    const disposable = {
+  acquire(): Promise<Disposable> {
+    return this.#sem.acquire().then(() => ({
       [Symbol.dispose]: () => {
-        resolve();
-        this.#waiters.delete(promise);
+        this.#sem.release();
       },
-    };
-    return Object.assign(
-      Promise.all(waiters).then(() => disposable),
-      disposable,
-    );
+    }));
   }
 }

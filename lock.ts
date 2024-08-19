@@ -1,4 +1,4 @@
-import { Mutex } from "./mutex.ts";
+import { RawSemaphore } from "./_raw_semaphore.ts";
 
 /**
  * A mutual exclusion lock that provides safe concurrent access to a shared value.
@@ -16,7 +16,7 @@ import { Mutex } from "./mutex.ts";
  * ```
  */
 export class Lock<T> {
-  #mu = new Mutex();
+  #sem = new RawSemaphore(1);
   #value: T;
 
   /**
@@ -32,7 +32,7 @@ export class Lock<T> {
    * Returns true if the lock is currently locked, false otherwise.
    */
   get locked(): boolean {
-    return this.#mu.locked;
+    return this.#sem.locked;
   }
 
   /**
@@ -43,7 +43,11 @@ export class Lock<T> {
    * @returns A Promise that resolves with the result of the function.
    */
   async lock<R>(fn: (value: T) => R | PromiseLike<R>): Promise<R> {
-    using _lock = await this.#mu.acquire();
-    return await fn(this.#value);
+    await this.#sem.acquire();
+    try {
+      return await fn(this.#value);
+    } finally {
+      this.#sem.release();
+    }
   }
 }

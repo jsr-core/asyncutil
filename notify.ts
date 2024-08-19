@@ -1,6 +1,3 @@
-import { iter } from "@core/iterutil/iter";
-import { take } from "@core/iterutil/take";
-
 /**
  * Async notifier that allows one or more "waiters" to wait for a notification.
  *
@@ -23,13 +20,13 @@ import { take } from "@core/iterutil/take";
  * ```
  */
 export class Notify {
-  #waiters: Set<PromiseWithResolvers<void>> = new Set();
+  #waiters: PromiseWithResolvers<void>[] = [];
 
   /**
    * Returns the number of waiters that are waiting for notification.
    */
   get waiterCount(): number {
-    return this.#waiters.size;
+    return this.#waiters.length;
   }
 
   /**
@@ -43,21 +40,15 @@ export class Notify {
     if (n <= 0 || !Number.isSafeInteger(n)) {
       throw new RangeError(`n must be a positive safe integer, got ${n}`);
     }
-    const it = iter(this.#waiters);
-    for (const waiter of take(it, n)) {
-      waiter.resolve();
-    }
-    this.#waiters = new Set(it);
+    this.#waiters.splice(0, n).forEach(({ resolve }) => resolve());
   }
 
   /**
    * Notifies all waiters that are waiting for notification. Resolves each of the notified waiters.
    */
   notifyAll(): void {
-    for (const waiter of this.#waiters) {
-      waiter.resolve();
-    }
-    this.#waiters = new Set();
+    this.#waiters.forEach(({ resolve }) => resolve());
+    this.#waiters = [];
   }
 
   /**
@@ -65,18 +56,21 @@ export class Notify {
    * the `notify` method is called. The method returns a Promise that resolves when the caller is notified.
    * Optionally takes an AbortSignal to abort the waiting if the signal is aborted.
    */
-  async notified({ signal }: { signal?: AbortSignal } = {}): Promise<void> {
+  notified({ signal }: { signal?: AbortSignal } = {}): Promise<void> {
     if (signal?.aborted) {
-      throw signal.reason;
+      return Promise.reject(signal.reason);
     }
-    const waiter = Promise.withResolvers<void>();
     const abort = () => {
-      this.#waiters.delete(waiter);
-      waiter.reject(signal!.reason);
+      const waiter = this.#waiters.shift();
+      if (waiter) {
+        waiter.reject(signal!.reason);
+      }
     };
     signal?.addEventListener("abort", abort, { once: true });
-    this.#waiters.add(waiter);
-    await waiter.promise;
-    signal?.removeEventListener("abort", abort);
+    const waiter = Promise.withResolvers<void>();
+    this.#waiters.push(waiter);
+    return waiter.promise.finally(() => {
+      signal?.removeEventListener("abort", abort);
+    });
   }
 }
