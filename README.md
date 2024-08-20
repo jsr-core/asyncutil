@@ -44,6 +44,20 @@ worker(2);
 worker(3);
 ```
 
+### ensurePromise
+
+`ensurePromise` is a utility function that ensures a value is a promise.
+
+```ts
+import { ensurePromise } from "@core/asyncutil/ensure-promise";
+
+const p1 = ensurePromise(Promise.resolve("Resolved promise"));
+console.log(await p1); // Resolved promise
+
+const p2 = ensurePromise("Not a promise");
+console.log(await p2); // Not a promise
+```
+
 ### Lock/RwLock
 
 `Lock` is a mutual exclusion lock that provides safe concurrent access to a
