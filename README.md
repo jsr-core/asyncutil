@@ -58,6 +58,25 @@ const p2 = ensurePromise("Not a promise");
 console.log(await p2); // Not a promise
 ```
 
+### flushPromises
+
+`flushPromises` flushes all pending promises in the microtask queue.
+
+```ts
+import { flushPromises } from "@core/asyncutil/flush-promises";
+
+let count = 0;
+Array.from({ length: 5 }).forEach(() => {
+  Promise.resolve()
+    .then(() => count++)
+    .then(() => count++);
+});
+
+console.log(count); // 0
+await flushPromises();
+console.log(count); // 10
+```
+
 ### Lock/RwLock
 
 `Lock` is a mutual exclusion lock that provides safe concurrent access to a
