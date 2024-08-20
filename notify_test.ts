@@ -1,7 +1,8 @@
 import { test } from "@cross/test";
 import { delay } from "@std/async/delay";
 import { assertEquals, assertRejects, assertThrows } from "@std/assert";
-import { promiseState } from "./promise_state.ts";
+import { flushPromises } from "./flush_promises.ts";
+import { peekPromiseState } from "./peek_promise_state.ts";
 import { Notify } from "./notify.ts";
 
 test("Notify 'notify' wakes up a single waiter", async () => {
@@ -11,14 +12,16 @@ test("Notify 'notify' wakes up a single waiter", async () => {
   assertEquals(notify.waiterCount, 2);
 
   notify.notify();
+  await flushPromises();
   assertEquals(notify.waiterCount, 1);
-  assertEquals(await promiseState(waiter1), "fulfilled");
-  assertEquals(await promiseState(waiter2), "pending");
+  assertEquals(await peekPromiseState(waiter1), "fulfilled");
+  assertEquals(await peekPromiseState(waiter2), "pending");
 
   notify.notify();
+  await flushPromises();
   assertEquals(notify.waiterCount, 0);
-  assertEquals(await promiseState(waiter1), "fulfilled");
-  assertEquals(await promiseState(waiter2), "fulfilled");
+  assertEquals(await peekPromiseState(waiter1), "fulfilled");
+  assertEquals(await peekPromiseState(waiter2), "fulfilled");
 });
 
 test("Notify 'notify' wakes up a multiple waiters", async () => {
@@ -31,28 +34,31 @@ test("Notify 'notify' wakes up a multiple waiters", async () => {
   assertEquals(notify.waiterCount, 5);
 
   notify.notify(2);
+  await flushPromises();
   assertEquals(notify.waiterCount, 3);
-  assertEquals(await promiseState(waiter1), "fulfilled");
-  assertEquals(await promiseState(waiter2), "fulfilled");
-  assertEquals(await promiseState(waiter3), "pending");
-  assertEquals(await promiseState(waiter4), "pending");
-  assertEquals(await promiseState(waiter5), "pending");
+  assertEquals(await peekPromiseState(waiter1), "fulfilled");
+  assertEquals(await peekPromiseState(waiter2), "fulfilled");
+  assertEquals(await peekPromiseState(waiter3), "pending");
+  assertEquals(await peekPromiseState(waiter4), "pending");
+  assertEquals(await peekPromiseState(waiter5), "pending");
 
   notify.notify(2);
+  await flushPromises();
   assertEquals(notify.waiterCount, 1);
-  assertEquals(await promiseState(waiter1), "fulfilled");
-  assertEquals(await promiseState(waiter2), "fulfilled");
-  assertEquals(await promiseState(waiter3), "fulfilled");
-  assertEquals(await promiseState(waiter4), "fulfilled");
-  assertEquals(await promiseState(waiter5), "pending");
+  assertEquals(await peekPromiseState(waiter1), "fulfilled");
+  assertEquals(await peekPromiseState(waiter2), "fulfilled");
+  assertEquals(await peekPromiseState(waiter3), "fulfilled");
+  assertEquals(await peekPromiseState(waiter4), "fulfilled");
+  assertEquals(await peekPromiseState(waiter5), "pending");
 
   notify.notify(2);
+  await flushPromises();
   assertEquals(notify.waiterCount, 0);
-  assertEquals(await promiseState(waiter1), "fulfilled");
-  assertEquals(await promiseState(waiter2), "fulfilled");
-  assertEquals(await promiseState(waiter3), "fulfilled");
-  assertEquals(await promiseState(waiter4), "fulfilled");
-  assertEquals(await promiseState(waiter5), "fulfilled");
+  assertEquals(await peekPromiseState(waiter1), "fulfilled");
+  assertEquals(await peekPromiseState(waiter2), "fulfilled");
+  assertEquals(await peekPromiseState(waiter3), "fulfilled");
+  assertEquals(await peekPromiseState(waiter4), "fulfilled");
+  assertEquals(await peekPromiseState(waiter5), "fulfilled");
 });
 
 test("Notify 'notifyAll' wakes up all waiters", async () => {
@@ -62,9 +68,10 @@ test("Notify 'notifyAll' wakes up all waiters", async () => {
   assertEquals(notify.waiterCount, 2);
 
   notify.notifyAll();
+  await flushPromises();
   assertEquals(notify.waiterCount, 0);
-  assertEquals(await promiseState(waiter1), "fulfilled");
-  assertEquals(await promiseState(waiter2), "fulfilled");
+  assertEquals(await peekPromiseState(waiter1), "fulfilled");
+  assertEquals(await peekPromiseState(waiter2), "fulfilled");
 });
 
 test(
@@ -74,7 +81,7 @@ test(
     const notify = new Notify();
 
     const waiter = notify.notified({ signal: controller.signal });
-    assertEquals(await promiseState(waiter), "pending");
+    assertEquals(await peekPromiseState(waiter), "pending");
   },
 );
 

@@ -1,6 +1,7 @@
 import { test } from "@cross/test";
 import { assertEquals } from "@std/assert";
-import { promiseState } from "./promise_state.ts";
+import { flushPromises } from "./flush_promises.ts";
+import { peekPromiseState } from "./peek_promise_state.ts";
 import { AsyncValue } from "./async_value.ts";
 import { RwLock } from "./rw_lock.ts";
 
@@ -89,11 +90,13 @@ test(
     };
     const r = reader();
     const w = writer();
-    assertEquals(await promiseState(r), "pending");
-    assertEquals(await promiseState(w), "pending");
+    await flushPromises();
+    assertEquals(await peekPromiseState(r), "pending");
+    assertEquals(await peekPromiseState(w), "pending");
     resolve();
-    assertEquals(await promiseState(r), "fulfilled");
-    assertEquals(await promiseState(w), "fulfilled");
+    await flushPromises();
+    assertEquals(await peekPromiseState(r), "fulfilled");
+    assertEquals(await peekPromiseState(w), "fulfilled");
   },
 );
 
@@ -114,10 +117,12 @@ test(
     };
     const w = writer();
     const r = reader();
-    assertEquals(await promiseState(w), "pending");
-    assertEquals(await promiseState(r), "pending");
+    await flushPromises();
+    assertEquals(await peekPromiseState(w), "pending");
+    assertEquals(await peekPromiseState(r), "pending");
     resolve();
-    assertEquals(await promiseState(w), "fulfilled");
-    assertEquals(await promiseState(r), "fulfilled");
+    await flushPromises();
+    assertEquals(await peekPromiseState(w), "fulfilled");
+    assertEquals(await peekPromiseState(r), "fulfilled");
   },
 );

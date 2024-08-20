@@ -1,7 +1,8 @@
 import { test } from "@cross/test";
 import { delay } from "@std/async/delay";
 import { assertEquals, assertRejects } from "@std/assert";
-import { promiseState } from "./promise_state.ts";
+import { flushPromises } from "./flush_promises.ts";
+import { peekPromiseState } from "./peek_promise_state.ts";
 import { Stack } from "./stack.ts";
 
 test("Stack 'pop' returns pushed items", async () => {
@@ -17,9 +18,11 @@ test("Stack 'pop' returns pushed items", async () => {
 test("Stack 'pop' waits for an item is pushed", async () => {
   const q = new Stack<number>();
   const popper = q.pop();
-  assertEquals(await promiseState(popper), "pending");
+  await flushPromises();
+  assertEquals(await peekPromiseState(popper), "pending");
   q.push(1);
-  assertEquals(await promiseState(popper), "fulfilled");
+  await flushPromises();
+  assertEquals(await peekPromiseState(popper), "fulfilled");
   assertEquals(await popper, 1);
 });
 
@@ -27,7 +30,8 @@ test("Stack 'pop' with non-aborted signal", async () => {
   const controller = new AbortController();
   const q = new Stack<number>();
   const popper = q.pop({ signal: controller.signal });
-  assertEquals(await promiseState(popper), "pending");
+  await flushPromises();
+  assertEquals(await peekPromiseState(popper), "pending");
 });
 
 test("Stack 'pop' with signal aborted after delay", async () => {
@@ -61,17 +65,21 @@ test("Stack 'pop' with signal already aborted", async () => {
 test("Stack with falsy value is accepted", async () => {
   const q = new Stack<number>();
   const popper = q.pop();
-  assertEquals(await promiseState(popper), "pending");
+  await flushPromises();
+  assertEquals(await peekPromiseState(popper), "pending");
   q.push(0);
-  assertEquals(await promiseState(popper), "fulfilled");
+  await flushPromises();
+  assertEquals(await peekPromiseState(popper), "fulfilled");
   assertEquals(await popper, 0);
 });
 
 test("Stack with null is accepted", async () => {
   const q = new Stack<null>();
   const popper = q.pop();
-  assertEquals(await promiseState(popper), "pending");
+  await flushPromises();
+  assertEquals(await peekPromiseState(popper), "pending");
   q.push(null);
-  assertEquals(await promiseState(popper), "fulfilled");
+  await flushPromises();
+  assertEquals(await peekPromiseState(popper), "fulfilled");
   assertEquals(await popper, null);
 });
