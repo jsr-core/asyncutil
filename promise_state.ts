@@ -1,7 +1,5 @@
-/**
- * Promise state
- */
-export type PromiseState = "fulfilled" | "rejected" | "pending";
+import { flushPromises } from "./flush_promises.ts";
+import { peekPromiseState, type PromiseState } from "./peek_promise_state.ts";
 
 /**
  * Return state (fulfilled/rejected/pending) of a promise
@@ -14,16 +12,12 @@ export type PromiseState = "fulfilled" | "rejected" | "pending";
  * assertEquals(await promiseState(Promise.reject("error")), "rejected");
  * assertEquals(await promiseState(new Promise(() => {})), "pending");
  * ```
+ *
+ * @deprecated Use {@linkcode https://jsr.io/@core/asyncutil/doc/peek-promise-state/~/peekPromiseState peekPromiseState} with {@linkcode https://jsr.io/@core/asyncutil/doc/flush-promises/~/flushPromises flushPromises} instead.
  */
 export async function promiseState(p: Promise<unknown>): Promise<PromiseState> {
-  // NOTE:
-  // This 0 delay promise is required to refresh internal states of promises
-  await new Promise<void>((resolve) => {
-    setTimeout(() => resolve(), 0);
-  });
-  const t = {};
-  return Promise.race([p, t]).then(
-    (v) => (v === t ? "pending" : "fulfilled"),
-    () => "rejected",
-  );
+  await flushPromises();
+  return peekPromiseState(p);
 }
+
+export type { PromiseState };
