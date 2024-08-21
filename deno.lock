@@ -4,11 +4,15 @@
     "specifiers": {
       "jsr:@core/asyncutil@~1.0.0": "jsr:@core/asyncutil@1.0.2",
       "jsr:@core/iterutil@^0.6.0": "jsr:@core/iterutil@0.6.0",
+      "jsr:@core/unknownutil@^4.2.0": "jsr:@core/unknownutil@4.2.0",
       "jsr:@cross/runtime@^1.0.0": "jsr:@cross/runtime@1.0.0",
       "jsr:@cross/test@^0.0.9": "jsr:@cross/test@0.0.9",
       "jsr:@std/assert@^1.0.2": "jsr:@std/assert@1.0.2",
       "jsr:@std/async@^1.0.2": "jsr:@std/async@1.0.3",
       "jsr:@std/internal@^1.0.1": "jsr:@std/internal@1.0.1",
+      "jsr:@std/json@^1.0.0": "jsr:@std/json@1.0.0",
+      "jsr:@std/jsonc@^1.0.0": "jsr:@std/jsonc@1.0.0",
+      "jsr:@std/path@^1.0.2": "jsr:@std/path@1.0.2",
       "npm:@types/node": "npm:@types/node@18.16.19"
     },
     "jsr": {
@@ -20,6 +24,9 @@
       },
       "@core/iterutil@0.6.0": {
         "integrity": "8de0d0062a515496ae744983941d7e379668c2ee2edf43f63423e8da753828b1"
+      },
+      "@core/unknownutil@4.2.0": {
+        "integrity": "cc0609f2e9fcfd68783c8c34d588261464114770d83047e93eaa1e13732aaedb"
       },
       "@cross/runtime@1.0.0": {
         "integrity": "dddecdf99182df13d50279d1e473f715e83d41961c5c22edd7bb0c4c3cf8a76a"
@@ -41,6 +48,18 @@
       },
       "@std/internal@1.0.1": {
         "integrity": "6f8c7544d06a11dd256c8d6ba54b11ed870aac6c5aeafff499892662c57673e6"
+      },
+      "@std/json@1.0.0": {
+        "integrity": "985c1e544918d42e4e84072fc739ac4a19c3a5093292c99742ffcdd03fb6a268"
+      },
+      "@std/jsonc@1.0.0": {
+        "integrity": "835da212e586f3ef94ab25e8f0e8a7711a86fddbee95ad40c34d6b3d74da1a1b",
+        "dependencies": [
+          "jsr:@std/json@^1.0.0"
+        ]
+      },
+      "@std/path@1.0.2": {
+        "integrity": "a452174603f8c620bd278a380c596437a9eef50c891c64b85812f735245d9ec7"
       }
     },
     "npm": {
@@ -54,9 +73,12 @@
   "workspace": {
     "dependencies": [
       "jsr:@core/iterutil@^0.6.0",
+      "jsr:@core/unknownutil@^4.2.0",
       "jsr:@cross/test@^0.0.9",
       "jsr:@std/assert@^1.0.2",
-      "jsr:@std/async@^1.0.2"
+      "jsr:@std/async@^1.0.2",
+      "jsr:@std/jsonc@^1.0.0",
+      "jsr:@std/path@^1.0.2"
     ],
     "packageJson": {
       "dependencies": [

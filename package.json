@@ -2,8 +2,11 @@
   "type": "module",
   "dependencies": {
     "@core/iterutil": "npm:@jsr/core__iterutil@^0.6.0-pre.0",
+    "@core/unknownutil": "npm:@jsr/core__unknownutil@^4.2.0",
     "@cross/test": "npm:@jsr/cross__test",
     "@std/assert": "npm:@jsr/std__assert",
-    "@std/async": "npm:@jsr/std__async@^1.0.3"
+    "@std/async": "npm:@jsr/std__async@^1.0.3",
+    "@std/jsonc": "npm:@jsr/std__jsonc@^1.0.0-rc.3",
+    "@std/path": "npm:@jsr/std__path@^1.0.2"
   }
 }
