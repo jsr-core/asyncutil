@@ -58,6 +58,25 @@ const p2 = ensurePromise("Not a promise");
 console.log(await p2); // Not a promise
 ```
 
+### flushPromises
+
+`flushPromises` flushes all pending promises in the microtask queue.
+
+```ts
+import { flushPromises } from "@core/asyncutil/flush-promises";
+
+let count = 0;
+Array.from({ length: 5 }).forEach(() => {
+  Promise.resolve()
+    .then(() => count++)
+    .then(() => count++);
+});
+
+console.log(count); // 0
+await flushPromises();
+console.log(count); // 10
+```
+
 ### Lock/RwLock
 
 `Lock` is a mutual exclusion lock that provides safe concurrent access to a
@@ -156,22 +175,37 @@ assertEquals(await promiseState(waiter1), "fulfilled");
 assertEquals(await promiseState(waiter2), "fulfilled");
 ```
 
-### promiseState
+### peekPromiseState
 
-`promiseState` is used to determine the state of the promise. Mainly for testing
-purpose.
+`peekPromiseState` is used to determine the state of the promise. Mainly for
+testing purpose.
 
 ```typescript
-import { promiseState } from "@core/asyncutil/promise-state";
+import { peekPromiseState } from "@core/asyncutil/peek-promise-state";
 
 const p1 = Promise.resolve("Resolved promise");
-console.log(await promiseState(p1)); // fulfilled
+console.log(await peekPromiseState(p1)); // fulfilled
 
 const p2 = Promise.reject("Rejected promise").catch(() => undefined);
-console.log(await promiseState(p2)); // rejected
+console.log(await peekPromiseState(p2)); // rejected
 
 const p3 = new Promise(() => undefined);
-console.log(await promiseState(p3)); // pending
+console.log(await peekPromiseState(p3)); // pending
+```
+
+Use `flushPromises` to wait all pending promises to resolve.
+
+```typescript
+import { flushPromises } from "@core/asyncutil/flush-promises";
+import { peekPromiseState } from "@core/asyncutil/peek-promise-state";
+
+const p = Promise.resolve<void>(undefined)
+  .then(() => {})
+  .then(() => {});
+
+console.log(await peekPromiseState(p)); // pending
+await flushPromises();
+console.log(await peekPromiseState(p)); // fulfilled
 ```
 
 ### Queue/Stack
