@@ -30,6 +30,13 @@ export class RawSemaphore {
   }
 
   /**
+   * Returns the number of waiters that are waiting for lock release.
+   */
+  get waiterCount(): number {
+    return this.#resolves.length;
+  }
+
+  /**
    * Acquires the semaphore, blocking until the semaphore is available.
    */
   acquire(): Promise<void> {

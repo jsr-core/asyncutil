@@ -36,6 +36,13 @@ export class Semaphore {
   }
 
   /**
+   * Returns the number of waiters that are waiting for lock release.
+   */
+  get waiterCount(): number {
+    return this.#sem.waiterCount;
+  }
+
+  /**
    * Acquires a lock on the semaphore, and invokes the specified function.
    *
    * @param fn The function to invoke.
