@@ -83,9 +83,12 @@
     "packageJson": {
       "dependencies": [
         "npm:@jsr/core__iterutil@^0.6.0-pre.0",
+        "npm:@jsr/core__unknownutil@^4.2.0",
         "npm:@jsr/cross__test",
         "npm:@jsr/std__assert",
-        "npm:@jsr/std__async@^1.0.3"
+        "npm:@jsr/std__async@^1.0.3",
+        "npm:@jsr/std__jsonc@^1.0.0-rc.3",
+        "npm:@jsr/std__path@^1.0.2"
       ]
     }
   }

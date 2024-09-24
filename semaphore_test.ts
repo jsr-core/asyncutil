@@ -106,3 +106,56 @@ test(
     assertThrows(() => new Semaphore(0), RangeError);
   },
 );
+
+test(
+  "Semaphore.waiterCount returns the number of waiters (n=5)",
+  async () => {
+    const befores: number[] = [];
+    const afters: number[] = [];
+    const sem = new Semaphore(5);
+    const worker = (i: number) => {
+      return sem.lock(async () => {
+        befores.push(sem.waiterCount);
+        await new Promise((resolve) => setTimeout(resolve, 10 + i));
+        afters.push(sem.waiterCount);
+      });
+    };
+    await Promise.all([...Array(10)].map((_, i) => worker(i)));
+    /**
+     * Worker 0 |5========5
+     * Worker 1 |5=========4
+     * Worker 2 |5==========3
+     * Worker 3 |5===========2
+     * Worker 4 |5============1
+     * Worker 5 |----------4=============0
+     * Worker 6 |-----------3==============0
+     * Worker 7 |------------2===============0
+     * Worker 8 |-------------1================0
+     * Worker 9 |--------------0=================0
+     */
+    assertEquals(befores, [
+      5,
+      5,
+      5,
+      5,
+      5,
+      4,
+      3,
+      2,
+      1,
+      0,
+    ]);
+    assertEquals(afters, [
+      5,
+      4,
+      3,
+      2,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+    ]);
+  },
+);
